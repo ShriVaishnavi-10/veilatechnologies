@@ -3,7 +3,10 @@
 import React, { useState } from "react";
 import { Menu, X, ChevronDown, Globe, TrendingUp, Target, Smartphone, PenTool } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import Link from "next/link";
 import { usePathname } from "next/navigation";
+
+const MotionLink = motion.create(Link);
 
 export default function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -69,7 +72,7 @@ export default function Navbar() {
   return (
     <>
       <header
-        className="fixed top-0 left-0 right-0 z-50 bg-gradient-to-r from-[#ff8a00] to-[#ff2b00] py-4 border-b border-white/[0.08] shadow-md"
+        className="fixed top-0 left-0 right-0 z-50 bg-gradient-to-r from-[#ff8a00] to-[#ff2b00] py-2.5 border-b border-white/[0.08] shadow-md"
       >
         <div className="max-w-7xl mx-auto px-6 lg:px-8 flex items-center justify-between">
           {/* Desktop Nav Links (Left) */}
@@ -104,7 +107,7 @@ export default function Navbar() {
                             {servicesList.map((service) => {
                               const Icon = service.icon;
                               return (
-                                <a
+                                <Link
                                   key={service.slug}
                                   href={`/services/${service.slug}`}
                                   className="flex items-start gap-3 p-2.5 rounded-lg hover:bg-white/5 transition-colors group"
@@ -120,7 +123,7 @@ export default function Navbar() {
                                       {service.description}
                                     </span>
                                   </div>
-                                </a>
+                                </Link>
                               );
                             })}
                           </div>
@@ -132,7 +135,7 @@ export default function Navbar() {
               }
 
               return (
-                <motion.a
+                <MotionLink
                   key={link.name}
                   href={getHref(link.href)}
                   whileHover={{ scale: 1.05, y: -1 }}
@@ -140,17 +143,17 @@ export default function Navbar() {
                   className="text-xs font-semibold tracking-wider uppercase text-white/90 hover:text-white transition-colors duration-200 hover:underline decoration-white decoration-2 underline-offset-4"
                 >
                   {link.name}
-                </motion.a>
+                </MotionLink>
               );
             })}
           </nav>
 
           {/* Logo Badge (Right) */}
-          <motion.a
+          <MotionLink
             href="/"
             whileHover="hover"
             whileTap={{ scale: 0.98 }}
-            className="flex items-center gap-3 bg-white border border-white/10 rounded-lg px-4 py-2 shadow-sm transition-shadow hover:shadow-md cursor-pointer"
+            className="flex items-center gap-2 bg-white border border-white/10 rounded-lg px-3.5 py-1.5 shadow-sm transition-shadow hover:shadow-md cursor-pointer"
           >
             <motion.div
               variants={{
@@ -168,9 +171,9 @@ export default function Navbar() {
                   const svgEl = e.currentTarget.nextElementSibling as HTMLElement;
                   if (svgEl) svgEl.style.display = "none";
                 }}
-                className="w-8 h-8 object-contain"
+                className="w-7 h-7 object-contain"
               />
-              <svg viewBox="0 0 100 100" fill="none" className="w-8 h-8 overflow-visible">
+              <svg viewBox="0 0 100 100" fill="none" className="w-7 h-7 overflow-visible">
                 <defs>
                   <linearGradient id="navOrangeRed" x1="0%" y1="0%" x2="100%" y2="100%">
                     <stop offset="0%" stopColor="#FF8A00" />
@@ -202,10 +205,10 @@ export default function Navbar() {
                 />
               </svg>
             </motion.div>
-            <span className="font-sans font-bold text-sm tracking-wide text-[#0B0B0C]">
+            <span className="font-sans font-bold text-xs tracking-wide text-[#0B0B0C]">
               Veila <span className="text-[#ff6a00] font-light">Technologies</span>
             </span>
-          </motion.a>
+          </MotionLink>
 
           {/* Mobile Menu Toggle */}
           <motion.button
@@ -227,7 +230,7 @@ export default function Navbar() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -12 }}
             transition={{ duration: 0.25, ease: "easeOut" }}
-            className="fixed inset-x-0 top-[76px] z-40 md:hidden p-6 mx-4 rounded-xl border border-white/10 bg-gradient-to-br from-[#ff8a00] to-[#ff2b00] shadow-xl"
+            className="fixed inset-x-0 top-[60px] z-40 md:hidden p-6 mx-4 rounded-xl border border-white/10 bg-gradient-to-br from-[#ff8a00] to-[#ff2b00] shadow-xl"
           >
             <div className="flex flex-col gap-6 text-left">
               {navLinks.map((link, idx) => {
@@ -253,7 +256,7 @@ export default function Navbar() {
                             {servicesList.map((service) => {
                               const Icon = service.icon;
                               return (
-                                <a
+                                <Link
                                   key={service.slug}
                                   href={`/services/${service.slug}`}
                                   onClick={() => setIsMobileMenuOpen(false)}
@@ -261,7 +264,7 @@ export default function Navbar() {
                                 >
                                   <Icon className="w-3.5 h-3.5 text-[#ff6a00]" />
                                   <span>{service.name}</span>
-                                </a>
+                                </Link>
                               );
                             })}
                           </motion.div>
@@ -272,7 +275,7 @@ export default function Navbar() {
                 }
 
                 return (
-                  <motion.a
+                  <MotionLink
                     key={link.name}
                     href={getHref(link.href)}
                     initial={{ opacity: 0, x: -8 }}
@@ -282,7 +285,7 @@ export default function Navbar() {
                     className="text-xs font-semibold uppercase tracking-wider text-white/90 hover:text-white transition-colors"
                   >
                     {link.name}
-                  </motion.a>
+                  </MotionLink>
                 );
               })}
             </div>

@@ -60,7 +60,7 @@ export default function AdminDashboardClient() {
         }
       }
     } catch (err) {
-      console.error("Error fetching inquiries:", err);
+      console.error("Error fetching inquiries details:", (err as any).message || (err as any).details || err);
     } finally {
       setLoading(false);
     }
@@ -90,12 +90,22 @@ export default function AdminDashboardClient() {
   const handleUpdateStatus = async (inquiryId: string, newStatus: string) => {
     try {
       if (isSupabaseConfigured && supabase) {
-        const { error } = await supabase
+        const { data, error } = await supabase
           .from("contact_inquiries")
           .update({ status: newStatus })
-          .eq("id", inquiryId);
+          .eq("id", inquiryId)
+          .select();
+        
         if (error) {
-          console.warn("Status update failed in database, falling back to local state.");
+          console.error("Status update failed in database:", error.message || error.details || error);
+          alert(`Failed to update status in database: ${error.message || "Please check RLS policies."}`);
+          return;
+        }
+
+        if (!data || data.length === 0) {
+          console.warn("No rows updated. RLS policy might be blocking updates.");
+          alert("Failed to update status. This usually happens because Row Level Security (RLS) is blocking updates. Please run the SQL policy setup in your Supabase dashboard.");
+          return;
         }
       } 
       
@@ -115,10 +125,8 @@ export default function AdminDashboardClient() {
       setInquiries(prev => prev.map(item => 
         (item.id === inquiryId || (item as any).created_at === inquiryId) ? { ...item, status: newStatus } : item
       ));
-
-      fetchInquiries();
     } catch (err) {
-      console.error("Error updating status:", err);
+      console.error("Error updating status:", (err as any).message || (err as any).details || err);
     }
   };
 
@@ -128,11 +136,23 @@ export default function AdminDashboardClient() {
 
     try {
       if (isSupabaseConfigured && supabase) {
-        const { error } = await supabase
+        const { data, error } = await supabase
           .from("contact_inquiries")
           .delete()
-          .eq("id", inquiryId);
-        if (error) console.error("Error deleting from database:", error);
+          .eq("id", inquiryId)
+          .select();
+          
+        if (error) {
+          console.error("Error deleting from database:", error.message || error.details || error);
+          alert(`Failed to delete from database: ${error.message || "Please check RLS policies."}`);
+          return;
+        }
+
+        if (!data || data.length === 0) {
+          console.warn("No rows deleted. RLS policy might be blocking deletes.");
+          alert("Failed to delete inquiry. This usually happens because Row Level Security (RLS) is blocking deletes. Please run the SQL policy setup in your Supabase dashboard.");
+          return;
+        }
       }
 
       // Delete from local storage
@@ -146,9 +166,8 @@ export default function AdminDashboardClient() {
       }
 
       setInquiries(prev => prev.filter(item => item.id !== inquiryId && (item as any).created_at !== inquiryId));
-      fetchInquiries();
     } catch (err) {
-      console.error("Error deleting inquiry:", err);
+      console.error("Error deleting inquiry:", (err as any).message || (err as any).details || err);
     }
   };
 

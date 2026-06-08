@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { ArrowLeft, CheckCircle2, Building2, Briefcase, Mail, MapPin, Calendar, Clock, Award } from "lucide-react";
+import { CheckCircle2, Building2, Briefcase, Mail, MapPin, Calendar, Clock, Award } from "lucide-react";
 import { motion } from "framer-motion";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -30,21 +30,7 @@ export default function CompanyDetailClient({ company }: CompanyDetailClientProp
         <div className="absolute bottom-10 right-1/4 w-96 h-96 bg-[#ff2b00]/5 rounded-full blur-[150px] pointer-events-none" />
 
         <div className="max-w-7xl mx-auto px-6 lg:px-8 relative z-10">
-          {/* Back Button */}
-          <motion.div
-            initial={{ opacity: 0, x: -10 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.4 }}
-            className="mb-8"
-          >
-            <a
-              href="/"
-              className="inline-flex items-center gap-2 text-xs font-mono tracking-wider text-[#ff6a00] hover:text-[#ff2b00] uppercase transition-colors group"
-            >
-              <ArrowLeft className="w-3.5 h-3.5 transition-transform group-hover:-translate-x-1" />
-              <span>Back to Home</span>
-            </a>
-          </motion.div>
+
 
           {/* Hero Section */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center mb-20">

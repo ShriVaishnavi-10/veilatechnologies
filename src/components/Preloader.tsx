@@ -7,13 +7,21 @@ export default function Preloader() {
   const [mounted, setMounted] = useState(false);
   const [showContent, setShowContent] = useState(true);
   const [isFinished, setIsFinished] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(() => {
+    if (typeof window !== "undefined") {
+      const isRefresh = (performance.getEntriesByType("navigation")[0] as PerformanceNavigationTiming)?.type === "reload";
+      const played = sessionStorage.getItem("veila_preloader_played") === "true";
+      return isRefresh || !played;
+    }
+    return true;
+  });
 
-  // Odometer Counter tick-up and state timeline
   useEffect(() => {
+    if (!loading) return;
+
+    setMounted(true);
     // Lock scrolling on mount
     document.body.style.overflow = "hidden";
-    setMounted(true);
 
     const duration = 1500; // Total loading duration in ms
     const startTime = performance.now();
@@ -51,6 +59,7 @@ export default function Preloader() {
             // Step 3: Wait 800ms (curtain animation length), then fully unmount component
             t3 = setTimeout(() => {
               setLoading(false);
+              sessionStorage.setItem("veila_preloader_played", "true");
             }, 800);
           }, 300);
         }, 350);
@@ -66,7 +75,7 @@ export default function Preloader() {
       clearTimeout(t3);
       document.body.style.overflow = "";
     };
-  }, []);
+  }, [loading]);
 
   // Determine stage text based on progress
   const getStageText = (prog: number) => {

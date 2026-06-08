@@ -1,5 +1,5 @@
 import React from "react";
-import Preloader from "@/components/Preloader";
+import PreloaderWrapper from "@/components/PreloaderWrapper";
 import Navbar from "@/components/Navbar";
 import Hero from "@/components/Hero";
 import Metrics from "@/components/Metrics";
@@ -12,7 +12,7 @@ export default function Home() {
   return (
     <div className="flex flex-col min-h-screen bg-bg-space overflow-hidden">
       {/* Themed Preloader */}
-      <Preloader />
+      <PreloaderWrapper />
 
       {/* Floating Header */}
       <Navbar />

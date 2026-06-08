@@ -2,6 +2,7 @@
 
 import React from "react";
 import { MessageSquare, ArrowUp } from "lucide-react";
+import Link from "next/link";
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
@@ -45,7 +46,7 @@ export default function Footer() {
           
           {/* Logo / Brand Info */}
           <div className="col-span-1 space-y-6">
-            <a href="/" className="flex items-center gap-3 group">
+            <Link href="/" className="flex items-center gap-3 group">
               <img
                 src="/logo.png"
                 alt="Veila Technologies Logo"
@@ -63,7 +64,7 @@ export default function Footer() {
                   Technologies
                 </span>
               </div>
-            </a>
+            </Link>
             <p className="text-sm text-slate-400 font-light leading-relaxed max-w-xs">
               Established in 2026 and based in Virudhunagar, Tamilnadu. Dedicated to helping businesses build, grow, and strengthen their online presence through innovative and result-oriented digital solutions.
             </p>
@@ -104,12 +105,12 @@ export default function Footer() {
               <ul className="space-y-2.5">
                 {section.links.map((link, lIdx) => (
                   <li key={lIdx}>
-                    <a
+                    <Link
                       href={link.href}
                       className="text-xs text-slate-500 hover:text-[#ff6a00] transition-colors duration-200 font-semibold"
                     >
                       {link.name}
-                    </a>
+                    </Link>
                   </li>
                 ))}
               </ul>
