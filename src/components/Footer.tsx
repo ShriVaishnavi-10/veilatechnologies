@@ -1,7 +1,6 @@
 "use client";
 
-import React from "react";
-import { MessageSquare, ArrowUp } from "lucide-react";
+import { ArrowUp } from "lucide-react";
 import Link from "next/link";
 
 export default function Footer() {
@@ -27,6 +26,7 @@ export default function Footer() {
       links: [
         { name: "About Veila", href: "/company/about" },
         { name: "Careers (Hiring)", href: "/company/careers" },
+        { name: "Company Updates", href: "/company/updates" },
         { name: "Client Estimator", href: "/operations/client-estimator" },
         { name: "Client Reviews", href: "/resources/client-reviews" },
         { name: "Contact Team", href: "/contact" },
@@ -42,10 +42,10 @@ export default function Footer() {
       <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-8">
         
         {/* Top Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 sm:gap-12 pb-16 border-b border-white/[0.04]">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-8 sm:gap-12 pb-16 border-b border-white/[0.04]">
           
           {/* Logo / Brand Info */}
-          <div className="col-span-1 space-y-6">
+          <div className="col-span-1 md:col-span-2 space-y-6">
             <Link href="/" className="flex items-center gap-3 group">
               <img
                 src="/logo.png"
@@ -75,22 +75,29 @@ export default function Footer() {
             </div>
             {/* Social Icons */}
             <div className="flex items-center gap-4">
-              <a href="#" className="p-2 rounded-lg bg-[#16161a]/60 border border-white/10 text-slate-400 hover:text-[#ff6a00] hover:border-[#ff6a00]/30 shadow-sm transition-all" aria-label="Github link">
-                <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
-                  <path d="M12 2A10 10 0 0 0 2 12c0 4.42 2.87 8.17 6.84 9.5.5.08.66-.23.66-.5v-1.69c-2.77.6-3.36-1.34-3.36-1.34-.46-1.16-1.11-1.47-1.11-1.47-.9-.62.07-.6.07-.6 1 .07 1.53 1.03 1.53 1.03.9 1.52 2.34 1.07 2.91.83.09-.65.35-1.09.63-1.34-2.22-.25-4.55-1.11-4.55-4.92 0-1.11.38-2 1.03-2.71-.1-.25-.45-1.29.1-2.64 0 0 .84-.27 2.75 1.02.79-.22 1.65-.33 2.5-.33.85 0 1.71.11 2.5.33 1.91-1.29 2.75-1.02 2.75-1.02.55 1.35.2 2.39.1 2.64.65.71 1.03 1.6 1.03 2.71 0 3.82-2.34 4.66-4.57 4.91.36.31.69.92.69 1.85V21c0 .27.16.59.67.5C19.14 20.16 22 16.42 22 12A10 10 0 0 0 12 2z"/>
+              <a
+                href="https://www.instagram.com/veilatechnologies"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="p-2 rounded-lg bg-[#16161a]/60 border border-white/10 text-slate-400 hover:text-[#ff6a00] hover:border-[#ff6a00]/30 shadow-sm transition-all"
+                aria-label="Instagram link"
+              >
+                <svg className="w-4 h-4 fill-none stroke-current" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+                  <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+                  <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+                  <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
                 </svg>
               </a>
-              <a href="#" className="p-2 rounded-lg bg-[#16161a]/60 border border-white/10 text-slate-400 hover:text-[#ff6a00] hover:border-[#ff6a00]/30 shadow-sm transition-all" aria-label="Twitter link">
-                <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
-                  <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
-                </svg>
-              </a>
-              <a href="#" className="p-2 rounded-lg bg-[#16161a]/60 border border-white/10 text-slate-400 hover:text-[#ff6a00] hover:border-[#ff6a00]/30 shadow-sm transition-all" aria-label="Discord link">
-                <MessageSquare className="w-4 h-4" />
-              </a>
-              <a href="#" className="p-2 rounded-lg bg-[#16161a]/60 border border-white/10 text-slate-400 hover:text-[#ff6a00] hover:border-[#ff6a00]/30 shadow-sm transition-all" aria-label="Linkedin link">
-                <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
-                  <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/>
+              <a
+                href="https://www.youtube.com/@veilatechnologies"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="p-2 rounded-lg bg-[#16161a]/60 border border-white/10 text-slate-400 hover:text-[#ff6a00] hover:border-[#ff6a00]/30 shadow-sm transition-all"
+                aria-label="YouTube link"
+              >
+                <svg className="w-4 h-4 fill-none stroke-current" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+                  <path d="M22.54 6.42a2.78 2.78 0 0 0-1.95-1.96C18.88 4 12 4 12 4s-6.88 0-8.59.46a2.78 2.78 0 0 0-1.95 1.96A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.41 19c1.71.46 8.59.46 8.59.46s6.88 0 8.59-.46a2.78 2.78 0 0 0 1.95-1.96 29 29 0 0 0 .46-5.33 29 29 0 0 0-.46-5.33z"></path>
+                  <polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02"></polygon>
                 </svg>
               </a>
             </div>

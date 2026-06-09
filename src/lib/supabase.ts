@@ -12,14 +12,12 @@ export const supabase = isSupabaseConfigured
 
 // Mock interface for when Supabase is not configured yet
 export const submitContactFormMock = async (data: { name: string; email: string; message: string }) => {
-  console.log('[Veila Tech mock] Submitting contact form:', data);
   // Simulate network latency
   await new Promise((resolve) => setTimeout(resolve, 800));
   return { error: null, success: true };
 };
 
 export const submitNewsletterMock = async (email: string) => {
-  console.log('[Veila Tech mock] Newsletter subscription for:', email);
   await new Promise((resolve) => setTimeout(resolve, 600));
   return { error: null, success: true };
 };
