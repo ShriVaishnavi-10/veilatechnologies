@@ -3,6 +3,9 @@
 import React from "react";
 import { Globe, TrendingUp, Target, Smartphone, PenTool, ArrowRight } from "lucide-react";
 import { motion } from "framer-motion";
+import Link from "next/link";
+
+const MotionLink = motion.create(Link);
 
 interface ServiceItem {
   icon: React.ReactNode;
@@ -184,7 +187,7 @@ export default function Services() {
               </div>
 
               {/* Action link */}
-              <motion.a
+              <MotionLink
                 href={`/services/${service.slug}`}
                 whileHover="linkHover"
                 className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#ff6a00] hover:text-[#ff2b00] transition-colors pt-4 border-t border-white/[0.04] w-full"
@@ -193,7 +196,7 @@ export default function Services() {
                 <motion.div variants={arrowVariants} className="flex items-center">
                   <ArrowRight className="w-3.5 h-3.5" />
                 </motion.div>
-              </motion.a>
+              </MotionLink>
             </motion.div>
           ))}
         </motion.div>

@@ -124,35 +124,35 @@ export const blogPosts: BlogPost[] = [
 
 export const clientReviewsList: ReviewItem[] = [
   {
-    client: "Alessandro Veloce",
+    client: "Ramya",
     company: "Veloce Timepieces",
     rating: 5,
     review: "Veila Technologies completely restructured our e-commerce flow. The new Next.js storefront loads instantly, and we saw a 32% increase in sales conversion within weeks. Their attention to animation detail is incredible.",
     service: "Website Development"
   },
   {
-    client: "Sarah Jenkins",
+    client: "Priya",
     company: "EcoSphere Retail",
     rating: 5,
     review: "The SEO campaign exceeded all expectations. We grew organic search traffic by 250% in just 6 months. We now rank page #1 for dozens of high-value search keywords. Strongly recommend Veila for SEO audits and backlink strategy.",
     service: "Search Engine Optimization"
   },
   {
-    client: "Devon Miller",
+    client: "Gokulakrishnan",
     company: "Prime Capital",
     rating: 5,
     review: "Our B2B LinkedIn campaign yielded over 450 qualified investor leads. Veila created extremely precise landing pages that achieved a 4.2x Return on Ad Spend. Responsive, technical, and data-driven.",
     service: "Digital Marketing & Ads"
   },
   {
-    client: "Elena Rostova",
+    client: "Sunmathi",
     company: "Cafe Bloom Group",
     rating: 5,
     review: "Managing social handles is a full-time job. Veila took over our visual planning, graphics templates, and reels strategy. Our Instagram grew from 2k to 18k followers organically, driving massive foot traffic to our locations.",
     service: "Social Media Management"
   },
   {
-    client: "Marcus Aurelius",
+    client: "Barath",
     company: "Aura Living",
     rating: 5,
     review: "Veila built a robust search portal with booking systems and Stripe payments. The platform has 99.9% uptime and easily supports 5,000+ active listings. The code is exceptionally clean.",

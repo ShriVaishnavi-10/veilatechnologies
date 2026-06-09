@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { Lock, Mail, User, ShieldAlert, ArrowLeft, Trash2, CheckCircle, Eye, LogOut, Loader2, Sparkles, Filter } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import Link from "next/link";
 import { supabase, isSupabaseConfigured } from "@/lib/supabase";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -51,11 +52,13 @@ export default function AdminDashboardClient() {
           .select("*")
           .order("created_at", { ascending: false });
         if (error) throw error;
+        console.log("Fetched inquiries from database:", data);
         setInquiries(data || []);
       } else {
         // Load from local storage fallback
         if (typeof window !== "undefined") {
           const localData = localStorage.getItem("veila_contact_inquiries");
+          console.log("Fetched inquiries from localStorage:", localData);
           setInquiries(localData ? JSON.parse(localData) : []);
         }
       }
@@ -87,7 +90,8 @@ export default function AdminDashboardClient() {
   };
 
   // Update Status in database or localStorage
-  const handleUpdateStatus = async (inquiryId: string, newStatus: string) => {
+  const handleUpdateStatus = async (inquiryId: string | number, newStatus: string) => {
+    console.log("handleUpdateStatus called with ID:", inquiryId, "status:", newStatus);
     try {
       if (isSupabaseConfigured && supabase) {
         const { data, error } = await supabase
@@ -95,6 +99,8 @@ export default function AdminDashboardClient() {
           .update({ status: newStatus })
           .eq("id", inquiryId)
           .select();
+        
+        console.log("Supabase update response data:", data, "error:", error);
         
         if (error) {
           console.error("Status update failed in database:", error.message || error.details || error);
@@ -115,24 +121,30 @@ export default function AdminDashboardClient() {
         if (localData) {
           const parsed: Inquiry[] = JSON.parse(localData);
           const updated = parsed.map(item => 
-            item.id === inquiryId ? { ...item, status: newStatus } : item
+            String(item.id) === String(inquiryId) ? { ...item, status: newStatus } : item
           );
           localStorage.setItem("veila_contact_inquiries", JSON.stringify(updated));
         }
       }
 
       // Update state
-      setInquiries(prev => prev.map(item => 
-        (item.id === inquiryId || (item as any).created_at === inquiryId) ? { ...item, status: newStatus } : item
-      ));
+      setInquiries(prev => {
+        const next = prev.map(item => {
+          const isMatch = String(item.id) === String(inquiryId) || String(item.created_at) === String(inquiryId);
+          console.log(`Comparing item.id (${item.id}) or item.created_at (${item.created_at}) with inquiryId (${inquiryId}) -> Match:`, isMatch);
+          return isMatch ? { ...item, status: newStatus } : item;
+        });
+        return next;
+      });
     } catch (err) {
       console.error("Error updating status:", (err as any).message || (err as any).details || err);
     }
   };
 
   // Delete Inquiry
-  const handleDeleteInquiry = async (inquiryId: string) => {
+  const handleDeleteInquiry = async (inquiryId: string | number) => {
     if (!confirm("Are you sure you want to archive and delete this inquiry?")) return;
+    console.log("handleDeleteInquiry called with ID:", inquiryId);
 
     try {
       if (isSupabaseConfigured && supabase) {
@@ -142,6 +154,8 @@ export default function AdminDashboardClient() {
           .eq("id", inquiryId)
           .select();
           
+        console.log("Supabase delete response data:", data, "error:", error);
+
         if (error) {
           console.error("Error deleting from database:", error.message || error.details || error);
           alert(`Failed to delete from database: ${error.message || "Please check RLS policies."}`);
@@ -160,12 +174,12 @@ export default function AdminDashboardClient() {
         const localData = localStorage.getItem("veila_contact_inquiries");
         if (localData) {
           const parsed: Inquiry[] = JSON.parse(localData);
-          const updated = parsed.filter(item => item.id !== inquiryId);
+          const updated = parsed.filter(item => String(item.id) !== String(inquiryId));
           localStorage.setItem("veila_contact_inquiries", JSON.stringify(updated));
         }
       }
 
-      setInquiries(prev => prev.filter(item => item.id !== inquiryId && (item as any).created_at !== inquiryId));
+      setInquiries(prev => prev.filter(item => String(item.id) !== String(inquiryId) && String(item.created_at) !== String(inquiryId)));
     } catch (err) {
       console.error("Error deleting inquiry:", (err as any).message || (err as any).details || err);
     }
@@ -174,6 +188,8 @@ export default function AdminDashboardClient() {
   // Filtering
   const filteredInquiries = filter === "All"
     ? inquiries
+    : filter === "Completed"
+    ? inquiries.filter(item => item.status === "Contacted")
     : inquiries.filter(item => {
         if (filter === "Web") return item.service === "Website Development";
         if (filter === "SEO") return item.service === "SEO Optimization";
@@ -186,6 +202,7 @@ export default function AdminDashboardClient() {
   // Stats
   const totalCount = inquiries.length;
   const newCount = inquiries.filter(item => !item.status || item.status === "New").length;
+  const completedCount = inquiries.filter(item => item.status === "Contacted").length;
   const webCount = inquiries.filter(item => item.service === "Website Development").length;
   const mktCount = inquiries.filter(item => item.service.toLowerCase().includes("marketing") || item.service.toLowerCase().includes("social")).length;
 
@@ -219,13 +236,13 @@ export default function AdminDashboardClient() {
                   <p className="text-xs text-slate-400 font-light leading-relaxed">
                     This is a private administrative dashboard for Veila Technologies staff to read customer inquiries. If you are a client looking to build, grow, or plan your project, please return to the homepage.
                   </p>
-                  <a
+                  <Link
                     href="/"
                     className="w-full py-2.5 rounded-lg text-xs font-bold uppercase tracking-wider border border-white/10 hover:border-white/20 text-white transition-all inline-flex items-center justify-center gap-2 bg-[#16161a] cursor-pointer"
                   >
                     <ArrowLeft className="w-3.5 h-3.5" />
                     Back to Homepage
-                  </a>
+                  </Link>
                 </div>
 
                 {/* Login Form Panel */}
@@ -300,7 +317,7 @@ export default function AdminDashboardClient() {
                 </div>
 
                 {/* Stats Summary Panel */}
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+                <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 sm:gap-6">
                   <div className="p-4 rounded-xl border border-white/[0.04] bg-[#16161a]/40 backdrop-blur-sm">
                     <span className="text-[9px] font-mono tracking-wider text-slate-500 uppercase font-semibold block">Total Submissions</span>
                     <span className="text-2xl font-bold text-white mt-1 block">{totalCount}</span>
@@ -308,6 +325,10 @@ export default function AdminDashboardClient() {
                   <div className="p-4 rounded-xl border border-white/[0.04] bg-[#16161a]/40 backdrop-blur-sm">
                     <span className="text-[9px] font-mono tracking-wider text-slate-500 uppercase font-semibold block">Pending Action</span>
                     <span className="text-2xl font-bold text-[#ff6a00] mt-1 block">{newCount}</span>
+                  </div>
+                  <div className="p-4 rounded-xl border border-white/[0.04] bg-[#16161a]/40 backdrop-blur-sm">
+                    <span className="text-[9px] font-mono tracking-wider text-slate-500 uppercase font-semibold block">Completed</span>
+                    <span className="text-2xl font-bold text-green-500 mt-1 block">{completedCount}</span>
                   </div>
                   <div className="p-4 rounded-xl border border-white/[0.04] bg-[#16161a]/40 backdrop-blur-sm">
                     <span className="text-[9px] font-mono tracking-wider text-slate-500 uppercase font-semibold block">Web Inquiries</span>
@@ -326,7 +347,7 @@ export default function AdminDashboardClient() {
                     <span className="text-xs text-slate-500 font-light">Filter leads:</span>
                   </div>
                   <div className="flex flex-wrap gap-2">
-                    {["All", "Web", "SEO", "Marketing", "Social", "Content"].map(cat => (
+                    {["All", "Completed", "Web", "SEO", "Marketing", "Social", "Content"].map(cat => (
                       <button
                         key={cat}
                         onClick={() => setFilter(cat)}

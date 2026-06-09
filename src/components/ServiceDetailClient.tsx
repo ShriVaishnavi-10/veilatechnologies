@@ -3,6 +3,7 @@
 import React from "react";
 import { Globe, TrendingUp, Target, Smartphone, PenTool, ArrowRight, CheckCircle2, Award, Zap, Code } from "lucide-react";
 import { motion } from "framer-motion";
+import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { ServiceDetail } from "@/lib/servicesData";
@@ -217,19 +218,19 @@ export default function ServiceDetailClient({ service }: ServiceDetailClientProp
             </p>
 
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <a
+              <Link
                 href="/#calculator"
                 className="w-full sm:w-auto px-6 py-3 rounded-lg text-xs font-semibold uppercase tracking-wider bg-white text-[#0B0B0C] hover:bg-slate-100 transition-colors inline-flex items-center justify-center gap-2"
               >
                 <span>Price Planner</span>
                 <ArrowRight className="w-3.5 h-3.5" />
-              </a>
-              <a
+              </Link>
+              <Link
                 href="/contact"
                 className="w-full sm:w-auto px-6 py-3 rounded-lg text-xs font-semibold uppercase tracking-wider border border-white/20 hover:border-[#ff6a00]/30 hover:bg-white/[0.02] text-white transition-all inline-flex items-center justify-center"
               >
                 Get In Touch
-              </a>
+              </Link>
             </div>
           </motion.div>
         </div>

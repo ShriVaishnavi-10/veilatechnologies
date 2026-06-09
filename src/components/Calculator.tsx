@@ -3,7 +3,10 @@
 import React, { useState, useEffect } from "react";
 import { Sparkles } from "lucide-react";
 import { motion } from "framer-motion";
+import Link from "next/link";
 import { usePathname } from "next/navigation";
+
+const MotionLink = motion.create(Link);
 
 export default function Calculator() {
   const pathname = usePathname();
@@ -311,14 +314,14 @@ export default function Calculator() {
             </div>
 
             <div className="pt-6">
-              <motion.a
+              <MotionLink
                 href="/contact"
                 whileHover={{ scale: 1.03 }}
                 whileTap={{ scale: 0.98 }}
                 className="w-full py-3 rounded bg-white text-[#ff2b00] hover:bg-orange-50 text-xs font-semibold text-center transition-all block"
               >
                 Discuss Project Budget
-              </motion.a>
+              </MotionLink>
             </div>
           </motion.div>
 

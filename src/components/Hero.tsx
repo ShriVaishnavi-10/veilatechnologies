@@ -3,6 +3,9 @@
 import React from "react";
 import { ArrowRight, Phone, Mail, Globe } from "lucide-react";
 import { motion } from "framer-motion";
+import Link from "next/link";
+
+const MotionLink = motion.create(Link);
 
 export default function Hero() {
   const containerVariants = {
@@ -133,14 +136,14 @@ export default function Hero() {
                 Explore Services
                 <ArrowRight className="w-3.5 h-3.5 text-white" />
               </motion.a>
-              <motion.a
+              <MotionLink
                 href="/contact"
                 whileHover={{ scale: 1.03 }}
                 whileTap={{ scale: 0.98 }}
                 className="w-full sm:w-auto px-6 py-3.5 rounded-lg font-semibold text-xs text-white border border-white/10 bg-[#16161a]/80 hover:bg-[#1e1e24] hover:border-white/20 transition-all flex items-center justify-center gap-2 shadow-sm"
               >
                 Get in Touch
-              </motion.a>
+              </MotionLink>
             </motion.div>
           </motion.div>
 
