@@ -132,24 +132,16 @@ export default function Preloader() {
             </defs>
             <style dangerouslySetInnerHTML={{ __html: `
               .loader-path-1 {
-                stroke-dasharray: 180;
-                stroke-dashoffset: 180;
-                animation: drawPath1 1.0s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-              }
-              .loader-path-2 {
-                stroke-dasharray: 60;
-                stroke-dashoffset: 60;
-                animation: drawPath2 0.5s cubic-bezier(0.4, 0, 0.2, 1) 0.6s forwards;
+                stroke-dasharray: 220;
+                stroke-dashoffset: 220;
+                animation: drawPath1 1.2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
               }
               .loader-v {
-                stroke-dasharray: 60;
-                stroke-dashoffset: 60;
-                animation: drawV 0.6s cubic-bezier(0.4, 0, 0.2, 1) 0.8s forwards;
+                stroke-dasharray: 40;
+                stroke-dashoffset: 40;
+                animation: drawV 0.5s cubic-bezier(0.4, 0, 0.2, 1) 0.9s forwards;
               }
               @keyframes drawPath1 {
-                to { stroke-dashoffset: 0; }
-              }
-              @keyframes drawPath2 {
                 to { stroke-dashoffset: 0; }
               }
               @keyframes drawV {
@@ -159,9 +151,9 @@ export default function Preloader() {
             {/* Glowing background blur */}
             <circle cx="50" cy="50" r="25" fill="#FF5E00" className="opacity-10" style={{ filter: "blur(16px)" }} />
             
-            {/* Outer Play Button Shape (Path 1) */}
+            {/* Outer Play Button Loop and Right Leg of V (Path 1) */}
             <path
-              d="M38 52 L38 32 C38 24, 43 20, 50 24 L78 43 C85 47, 85 53, 78 57 L54 71"
+              d="M 44 76 C 36 76, 30 73, 30 66 L 30 34 C 30 27, 34 24, 42 27 L 78 45 C 85 49, 85 55, 78 59 L 57 70 C 51 73, 47 71, 48 65 L 58 40"
               stroke="url(#loaderOrangeRed)"
               strokeWidth="8.5"
               strokeLinecap="round"
@@ -169,22 +161,12 @@ export default function Preloader() {
               className="loader-path-1"
             />
             
-            {/* Outer Play Button Shape Overlap (Path 2) */}
+            {/* Left Leg of V (Path 2) */}
             <path
-              d="M46 71 C41 71, 38 68, 38 61 L38 46"
+              d="M 38 40 L 48 65"
               stroke="url(#loaderOrangeRed)"
               strokeWidth="8.5"
               strokeLinecap="round"
-              className="loader-path-2"
-            />
-            
-            {/* Centered V Alphabet */}
-            <path
-              d="M45 42 L53 62 L61 42"
-              stroke="url(#loaderOrangeRed)"
-              strokeWidth="8.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
               className="loader-v"
             />
           </svg>
