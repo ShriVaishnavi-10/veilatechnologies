@@ -153,7 +153,7 @@ export default function Preloader() {
             
             {/* Outer Play Button Loop and Right Leg of V (Path 1) */}
             <path
-              d="M 44 76 C 36 76, 30 73, 30 66 L 30 34 C 30 27, 34 24, 42 27 L 78 45 C 85 49, 85 55, 78 59 L 57 70 C 51 73, 47 71, 48 65 L 58 40"
+              d="M 42 76 C 34 76, 30 73, 30 66 L 30 34 C 30 27, 34 22, 42 22 L 74 39 C 80 42, 80 58, 74 61 L 57 70 C 51 73, 47 71, 48 63 L 56 44"
               stroke="url(#loaderOrangeRed)"
               strokeWidth="8.5"
               strokeLinecap="round"
@@ -163,7 +163,7 @@ export default function Preloader() {
             
             {/* Left Leg of V (Path 2) */}
             <path
-              d="M 38 40 L 48 65"
+              d="M 40 44 L 48 63"
               stroke="url(#loaderOrangeRed)"
               strokeWidth="8.5"
               strokeLinecap="round"
