@@ -1,11 +1,12 @@
 "use client";
 
-import React from "react";
-import { CheckCircle2, Building2, Briefcase, Mail, MapPin, Calendar, Clock, Award } from "lucide-react";
-import { motion } from "framer-motion";
+import React, { useState } from "react";
+import { CheckCircle2, Building2, Briefcase, Mail, MapPin, Calendar, Clock, Award, X, Loader2 } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { CompanyDetail, jobOpeningsList } from "@/lib/companyData";
+import { supabase, isSupabaseConfigured } from "@/lib/supabase";
 
 const iconMap = {
   about: Building2,
@@ -18,6 +19,115 @@ interface CompanyDetailClientProps {
 
 export default function CompanyDetailClient({ company }: CompanyDetailClientProps) {
   const IconComponent = iconMap[company.slug as keyof typeof iconMap] || Building2;
+
+  // Career application modal form states
+  const [isApplyModalOpen, setIsApplyModalOpen] = useState(false);
+  const [selectedJob, setSelectedJob] = useState("");
+  const [applicantName, setApplicantName] = useState("");
+  const [applicantEmail, setApplicantEmail] = useState("");
+  const [applicantPhone, setApplicantPhone] = useState("");
+  const [resumeFile, setResumeFile] = useState<File | null>(null);
+  const [portfolioUrl, setPortfolioUrl] = useState("");
+  const [coverLetter, setCoverLetter] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitSuccess, setSubmitSuccess] = useState(false);
+  const [submitError, setSubmitError] = useState("");
+
+  const handleOpenApplyModal = (jobTitle: string) => {
+    setSelectedJob(jobTitle);
+    setIsApplyModalOpen(true);
+    setSubmitSuccess(false);
+    setSubmitError("");
+    setResumeFile(null);
+  };
+
+  const handleApplySubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!resumeFile) {
+      setSubmitError("Please select a resume file to upload.");
+      return;
+    }
+    setIsSubmitting(true);
+    setSubmitError("");
+
+    try {
+      let finalResumeUrl = "";
+
+      if (isSupabaseConfigured && supabase) {
+        const fileExt = resumeFile.name.split('.').pop();
+        const fileName = `${Math.random().toString(36).substring(2, 15)}_${Date.now()}.${fileExt}`;
+        const filePath = fileName;
+
+        const { error: uploadError } = await supabase.storage
+          .from("resumes")
+          .upload(filePath, resumeFile);
+
+        if (uploadError) throw uploadError;
+
+        const { data: { publicUrl } } = supabase.storage
+          .from("resumes")
+          .getPublicUrl(filePath);
+
+        finalResumeUrl = publicUrl;
+      } else {
+        // Wait 800ms to simulate network latency
+        await new Promise((resolve) => setTimeout(resolve, 800));
+        
+        // Convert file to Base64 data URL for local storage
+        finalResumeUrl = await new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result as string);
+          reader.onerror = (err) => reject(err);
+          reader.readAsDataURL(resumeFile);
+        });
+      }
+
+      const payload = {
+        job_title: selectedJob,
+        applicant_name: applicantName,
+        applicant_email: applicantEmail,
+        applicant_phone: applicantPhone,
+        resume_url: finalResumeUrl,
+        portfolio_url: portfolioUrl || "",
+        cover_letter: coverLetter
+      };
+
+      if (isSupabaseConfigured && supabase) {
+        const { error } = await supabase.from("job_applications").insert([payload]);
+        if (error) throw error;
+      } else {
+        if (typeof window !== "undefined") {
+          const existing = localStorage.getItem("veila_job_applications");
+          const list = existing ? JSON.parse(existing) : [];
+          const newApp = {
+            id: Math.random().toString(36).substring(2, 9),
+            created_at: new Date().toISOString(),
+            status: "New",
+            ...payload
+          };
+          localStorage.setItem("veila_job_applications", JSON.stringify([newApp, ...list]));
+        }
+      }
+
+      setSubmitSuccess(true);
+      // Reset form
+      setApplicantName("");
+      setApplicantEmail("");
+      setApplicantPhone("");
+      setResumeFile(null);
+      setPortfolioUrl("");
+      setCoverLetter("");
+    } catch (err: any) {
+      const rawMsg = err.message || "Unknown error";
+      let errMsg = rawMsg;
+      if (rawMsg.toLowerCase().includes("bucket") && (rawMsg.toLowerCase().includes("not found") || rawMsg.toLowerCase().includes("exist"))) {
+        errMsg = "Supabase Storage bucket 'resumes' was not found. Please create a PUBLIC bucket named 'resumes' in your Supabase dashboard -> Storage, and add SELECT/INSERT policies to enable uploads.";
+      }
+      setSubmitError(`${errMsg} (Raw Error: ${rawMsg})`);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <div className="flex flex-col min-h-screen bg-[#0B0B0C] text-slate-100 overflow-hidden">
@@ -210,12 +320,12 @@ export default function CompanyDetailClient({ company }: CompanyDetailClientProp
 
                       {/* Apply CTA Button */}
                       <div className="shrink-0 pt-2 lg:pt-0">
-                        <a
-                          href="mailto:veilatechnologies@gmail.com?subject=Job%20Application%20-%20Frontend%20Developer"
-                          className="px-4 py-2.5 rounded-lg text-xs font-bold uppercase tracking-wider text-white bg-gradient-to-r from-[#ff8a00] to-[#ff2b00] hover:from-[#ff7300] hover:to-[#ff1a00] shadow-sm transition-all inline-flex items-center justify-center cursor-pointer"
+                        <button
+                          onClick={() => handleOpenApplyModal(job.title)}
+                          className="px-4 py-2.5 rounded-lg text-xs font-bold uppercase tracking-wider text-white bg-gradient-to-r from-[#ff8a00] to-[#ff2b00] hover:from-[#ff7300] hover:to-[#ff1a00] shadow-sm transition-all inline-flex items-center justify-center cursor-pointer border-none outline-none focus:outline-none"
                         >
                           Apply Now
-                        </a>
+                        </button>
                       </div>
                     </div>
                   </motion.div>
@@ -241,6 +351,202 @@ export default function CompanyDetailClient({ company }: CompanyDetailClientProp
 
         </div>
       </main>
+
+      {/* Careers Application Form Modal */}
+      <AnimatePresence>
+        {isApplyModalOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm pointer-events-auto"
+          >
+            {/* Modal Box */}
+            <motion.div
+              initial={{ scale: 0.95, y: 15 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.95, y: 15 }}
+              transition={{ duration: 0.25, ease: "easeOut" }}
+              className="relative w-full max-w-lg rounded-2xl border border-white/[0.08] bg-[#16161a] p-6 sm:p-8 shadow-2xl overflow-y-auto max-h-[90vh] text-left"
+            >
+              {/* Close Button */}
+              <button
+                onClick={() => setIsApplyModalOpen(false)}
+                className="absolute top-4 right-4 p-1 rounded-lg hover:bg-white/5 border border-transparent hover:border-white/10 text-slate-400 hover:text-white transition-colors cursor-pointer"
+                aria-label="Close modal"
+              >
+                <X className="w-5 h-5" />
+              </button>
+
+              {submitSuccess ? (
+                <div className="py-8 text-center space-y-4">
+                  <div className="w-12 h-12 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mx-auto">
+                    <CheckCircle2 className="w-6 h-6 text-emerald-400" />
+                  </div>
+                  <h3 className="font-serif text-2xl text-white">Application Transmitted</h3>
+                  <p className="text-xs text-slate-400 font-light max-w-md mx-auto leading-relaxed">
+                    Thank you for applying to Veila Technologies! Your candidacy parameters for <strong>{selectedJob}</strong> have been logged. Our development managers will review your profile shortly.
+                  </p>
+                  <button
+                    onClick={() => setIsApplyModalOpen(false)}
+                    className="px-5 py-2.5 rounded-lg text-xs font-bold uppercase tracking-wider text-white bg-gradient-to-r from-[#ff8a00] to-[#ff2b00] hover:from-[#ff7300] hover:to-[#ff1a00] transition-all cursor-pointer border-none"
+                  >
+                    Return to Careers
+                  </button>
+                </div>
+              ) : (
+                <div className="space-y-6">
+                  <div>
+                    <span className="text-[9px] font-mono tracking-widest text-[#ff6a00] uppercase font-bold">
+                      Career Submission
+                    </span>
+                    <h3 className="font-serif text-xl sm:text-2xl font-medium text-white mt-1">
+                      Apply: {selectedJob}
+                    </h3>
+                    <p className="text-[10px] text-slate-400 font-light mt-1">
+                      Complete the parameters below to register your candidacy.
+                    </p>
+                  </div>
+
+                  <form onSubmit={handleApplySubmit} className="space-y-4">
+                    {/* Full Name */}
+                    <div className="space-y-1.5">
+                      <label className="text-[9px] font-mono tracking-wider text-slate-400 uppercase font-semibold">
+                        Full Name
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        placeholder="John Doe"
+                        value={applicantName}
+                        onChange={(e) => setApplicantName(e.target.value)}
+                        className="w-full px-3 py-2 rounded border border-white/[0.08] bg-[#1e1e24]/40 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-[#ff6a00]/40 focus:bg-[#1e1e24]/60 transition-all"
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      {/* Email */}
+                      <div className="space-y-1.5">
+                        <label className="text-[9px] font-mono tracking-wider text-slate-400 uppercase font-semibold">
+                          Email Address
+                        </label>
+                        <input
+                          type="email"
+                          required
+                          placeholder="johndoe@email.com"
+                          value={applicantEmail}
+                          onChange={(e) => setApplicantEmail(e.target.value)}
+                          className="w-full px-3 py-2 rounded border border-white/[0.08] bg-[#1e1e24]/40 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-[#ff6a00]/40 focus:bg-[#1e1e24]/60 transition-all"
+                        />
+                      </div>
+                      {/* Phone */}
+                      <div className="space-y-1.5">
+                        <label className="text-[9px] font-mono tracking-wider text-slate-400 uppercase font-semibold">
+                          Phone Number
+                        </label>
+                        <input
+                          type="tel"
+                          required
+                          placeholder="+91 98765 43210"
+                          value={applicantPhone}
+                          onChange={(e) => setApplicantPhone(e.target.value)}
+                          className="w-full px-3 py-2 rounded border border-white/[0.08] bg-[#1e1e24]/40 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-[#ff6a00]/40 focus:bg-[#1e1e24]/60 transition-all"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Resume Upload */}
+                    <div className="space-y-1.5">
+                      <label className="text-[9px] font-mono tracking-wider text-slate-400 uppercase font-semibold">
+                        Upload Resume (PDF, DOC, DOCX)
+                      </label>
+                      <div className="relative flex items-center justify-between px-3 py-2 rounded border border-white/[0.08] bg-[#1e1e24]/40 text-xs text-slate-300">
+                        <span className="truncate max-w-[250px]">
+                          {resumeFile ? resumeFile.name : "No file chosen"}
+                        </span>
+                        <label className="px-2.5 py-1 rounded bg-[#ff6a00]/10 hover:bg-[#ff6a00]/20 text-[#ff6a00] hover:text-[#ff7300] text-[10px] font-mono tracking-wide font-bold uppercase cursor-pointer border border-[#ff6a00]/20 transition-all shrink-0">
+                          Browse
+                          <input
+                            type="file"
+                            required
+                            accept=".pdf,.doc,.docx"
+                            onChange={(e) => {
+                              if (e.target.files && e.target.files[0]) {
+                                setResumeFile(e.target.files[0]);
+                              }
+                            }}
+                            className="hidden"
+                          />
+                        </label>
+                      </div>
+                    </div>
+
+                    {/* Portfolio URL */}
+                    <div className="space-y-1.5">
+                      <label className="text-[9px] font-mono tracking-wider text-slate-400 uppercase font-semibold">
+                        Portfolio / GitHub Link (Optional)
+                      </label>
+                      <input
+                        type="url"
+                        placeholder="https://github.com/username or personal website"
+                        value={portfolioUrl}
+                        onChange={(e) => setPortfolioUrl(e.target.value)}
+                        className="w-full px-3 py-2 rounded border border-white/[0.08] bg-[#1e1e24]/40 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-[#ff6a00]/40 focus:bg-[#1e1e24]/60 transition-all"
+                      />
+                    </div>
+
+                    {/* Cover Letter */}
+                    <div className="space-y-1.5">
+                      <label className="text-[9px] font-mono tracking-wider text-slate-400 uppercase font-semibold">
+                        Brief Cover Letter / Introduction
+                      </label>
+                      <textarea
+                        required
+                        rows={4}
+                        placeholder="Tell us about your background, experience, and why you want to join Veila Technologies..."
+                        value={coverLetter}
+                        onChange={(e) => setCoverLetter(e.target.value)}
+                        className="w-full px-3 py-2 rounded border border-white/[0.08] bg-[#1e1e24]/40 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-[#ff6a00]/40 focus:bg-[#1e1e24]/60 transition-all resize-none"
+                      />
+                    </div>
+
+                    {submitError && (
+                      <div className="text-[10px] text-rose-500 font-mono p-3 rounded border border-rose-500/20 bg-rose-500/[0.02]">
+                        {submitError}
+                      </div>
+                    )}
+
+                    {/* Buttons */}
+                    <div className="flex gap-4 pt-2">
+                      <button
+                        type="button"
+                        onClick={() => setIsApplyModalOpen(false)}
+                        className="flex-1 py-2.5 rounded border border-white/10 hover:bg-white/5 text-xs text-slate-300 font-semibold transition-colors cursor-pointer"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="submit"
+                        disabled={isSubmitting}
+                        className="flex-1 py-2.5 rounded bg-gradient-to-r from-[#ff8a00] to-[#ff2b00] hover:from-[#ff7300] hover:to-[#ff1a00] text-xs text-white font-semibold flex items-center justify-center gap-1.5 disabled:opacity-50 transition-all cursor-pointer border-none"
+                      >
+                        {isSubmitting ? (
+                          <>
+                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                            Transmitting...
+                          </>
+                        ) : (
+                          "Submit Application"
+                        )}
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              )}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Footer System */}
       <Footer />

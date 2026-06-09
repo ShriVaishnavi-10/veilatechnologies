@@ -5,8 +5,7 @@ import { Lock, Mail, User, ShieldAlert, ArrowLeft, Trash2, CheckCircle, Eye, Log
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { supabase, isSupabaseConfigured } from "@/lib/supabase";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
+
 
 interface Inquiry {
   id?: string;
@@ -18,13 +17,29 @@ interface Inquiry {
   status?: string;
 }
 
+interface JobApplication {
+  id: string;
+  job_title: string;
+  applicant_name: string;
+  applicant_email: string;
+  applicant_phone: string;
+  resume_url: string;
+  portfolio_url?: string;
+  cover_letter: string;
+  status: "New" | "Reviewed" | "Archived";
+  created_at: string;
+}
+
 export default function AdminDashboardClient() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [passcode, setPasscode] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [loginError, setLoginError] = useState("");
+  const [loginLoading, setLoginLoading] = useState(false);
+  const [authChecking, setAuthChecking] = useState(true);
   
   // Tabs & Views
-  const [activeTab, setActiveTab] = useState<"inquiries" | "blogs">("inquiries");
+  const [activeTab, setActiveTab] = useState<"inquiries" | "blogs" | "applications">("inquiries");
 
   // Inquiries State
   const [inquiries, setInquiries] = useState<Inquiry[]>([]);
@@ -36,14 +51,60 @@ export default function AdminDashboardClient() {
   const [blogLoading, setBlogLoading] = useState(false);
   const [editingPost, setEditingPost] = useState<any | null>(null);
 
+  // Job Applications State
+  const [applications, setApplications] = useState<JobApplication[]>([]);
+  const [appLoading, setAppLoading] = useState(false);
+  const [appFilter, setAppFilter] = useState("All");
+  const [expandedApps, setExpandedApps] = useState<Record<string, boolean>>({});
+
+  const toggleExpandApp = (id: string) => {
+    setExpandedApps(prev => ({ ...prev, [id]: !prev[id] }));
+  };
+
   // Check login state on mount
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      const logged = sessionStorage.getItem("veila_admin_logged");
-      if (logged === "true") {
-        setIsLoggedIn(true);
+    let authListener: any = null;
+
+    if (isSupabaseConfigured && supabase) {
+      // Get current session
+      supabase.auth.getSession().then(({ data: { session } }) => {
+        if (session) {
+          setIsLoggedIn(true);
+          sessionStorage.setItem("veila_admin_logged", "true");
+        } else {
+          setIsLoggedIn(false);
+          sessionStorage.removeItem("veila_admin_logged");
+        }
+        setAuthChecking(false);
+      });
+
+      // Listen to auth changes
+      const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+        if (event === "SIGNED_IN" && session) {
+          setIsLoggedIn(true);
+          sessionStorage.setItem("veila_admin_logged", "true");
+        } else if (event === "SIGNED_OUT") {
+          setIsLoggedIn(false);
+          sessionStorage.removeItem("veila_admin_logged");
+        }
+      });
+      authListener = subscription;
+    } else {
+      // Fallback local session checking
+      if (typeof window !== "undefined") {
+        const logged = sessionStorage.getItem("veila_admin_logged");
+        if (logged === "true") {
+          setIsLoggedIn(true);
+        }
       }
+      setAuthChecking(false);
     }
+
+    return () => {
+      if (authListener) {
+        authListener.unsubscribe();
+      }
+    };
   }, []);
 
   // Fetch data depending on active tab
@@ -53,9 +114,95 @@ export default function AdminDashboardClient() {
         fetchInquiries();
       } else if (activeTab === "blogs") {
         fetchBlogPosts();
+      } else if (activeTab === "applications") {
+        fetchApplications();
       }
     }
   }, [isLoggedIn, activeTab]);
+
+  const fetchApplications = async () => {
+    setAppLoading(true);
+    try {
+      if (isSupabaseConfigured && supabase) {
+        const { data, error } = await supabase
+          .from("job_applications")
+          .select("*")
+          .order("created_at", { ascending: false });
+        if (error) throw error;
+        setApplications(data || []);
+      } else {
+        if (typeof window !== "undefined") {
+          const localData = localStorage.getItem("veila_job_applications");
+          setApplications(localData ? JSON.parse(localData) : []);
+        }
+      }
+    } catch (err) {
+      // Error fetching applications
+    } finally {
+      setAppLoading(false);
+    }
+  };
+
+  const updateApplicationStatus = async (applicationId: string, newStatus: string) => {
+    try {
+      if (isSupabaseConfigured && supabase) {
+        const { error } = await supabase
+          .from("job_applications")
+          .update({ status: newStatus })
+          .eq("id", applicationId);
+        if (error) throw error;
+      } else {
+        if (typeof window !== "undefined") {
+          const localData = localStorage.getItem("veila_job_applications");
+          if (localData) {
+            const list: JobApplication[] = JSON.parse(localData);
+            const updated = list.map(item => 
+              (String(item.id) === String(applicationId) || String(item.created_at) === String(applicationId))
+                ? { ...item, status: newStatus as any }
+                : item
+            );
+            localStorage.setItem("veila_job_applications", JSON.stringify(updated));
+          }
+        }
+      }
+      setApplications(prev => prev.map(item => 
+        (String(item.id) === String(applicationId) || String(item.created_at) === String(applicationId))
+          ? { ...item, status: newStatus as any }
+          : item
+      ));
+    } catch (err) {
+      // Error updating status
+    }
+  };
+
+  const deleteApplication = async (applicationId: string) => {
+    if (!window.confirm("Are you sure you want to delete this job application?")) return;
+    try {
+      if (isSupabaseConfigured && supabase) {
+        const { error } = await supabase
+          .from("job_applications")
+          .delete()
+          .eq("id", applicationId);
+        if (error) throw error;
+      } else {
+        if (typeof window !== "undefined") {
+          const localData = localStorage.getItem("veila_job_applications");
+          if (localData) {
+            const list: JobApplication[] = JSON.parse(localData);
+            const updated = list.filter(item => 
+              String(item.id) !== String(applicationId) && String(item.created_at) !== String(applicationId)
+            );
+            localStorage.setItem("veila_job_applications", JSON.stringify(updated));
+          }
+        }
+      }
+      setApplications(prev => prev.filter(item => 
+        String(item.id) !== String(applicationId) && String(item.created_at) !== String(applicationId)
+      ));
+    } catch (err) {
+      // Error deleting application
+    }
+  };
 
   const fetchInquiries = async () => {
     setLoading(true);
@@ -81,24 +228,57 @@ export default function AdminDashboardClient() {
     }
   };
 
-  const handleLoginSubmit = (e: React.FormEvent) => {
+  const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoginError("");
+    setLoginLoading(true);
 
-    const targetKey = process.env.NEXT_PUBLIC_ADMIN_ACCESS_KEY || "admin123";
+    try {
+      if (isSupabaseConfigured && supabase) {
+        // Authenticate via Supabase Auth
+        const { error } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
 
-    if (passcode === targetKey) {
-      sessionStorage.setItem("veila_admin_logged", "true");
-      setIsLoggedIn(true);
-    } else {
-      setLoginError("Invalid administrator passcode. Access Denied.");
+        if (error) {
+          setLoginError(error.message);
+          return;
+        }
+
+        // Session listener will handle updating isLoggedIn state
+      } else {
+        // Offline / fallback verification
+        const targetEmail = process.env.NEXT_PUBLIC_ADMIN_EMAIL || "admin@veila.com";
+        const targetPassword = process.env.NEXT_PUBLIC_ADMIN_ACCESS_KEY || "admin123";
+
+        if (email.trim().toLowerCase() === targetEmail.toLowerCase() && password === targetPassword) {
+          sessionStorage.setItem("veila_admin_logged", "true");
+          setIsLoggedIn(true);
+        } else {
+          setLoginError("Invalid administrator credentials. Access Denied.");
+        }
+      }
+    } catch (err: any) {
+      setLoginError(err.message || "An authentication error occurred.");
+    } finally {
+      setLoginLoading(false);
     }
   };
 
-  const handleLogout = () => {
-    sessionStorage.removeItem("veila_admin_logged");
-    setIsLoggedIn(false);
-    setPasscode("");
+  const handleLogout = async () => {
+    try {
+      if (isSupabaseConfigured && supabase) {
+        await supabase.auth.signOut();
+      }
+    } catch (err) {
+      // Ignore signOut errors
+    } finally {
+      sessionStorage.removeItem("veila_admin_logged");
+      setIsLoggedIn(false);
+      setEmail("");
+      setPassword("");
+    }
   };
 
   // Update Status in database or localStorage
@@ -415,12 +595,29 @@ export default function AdminDashboardClient() {
   const completedCount = inquiries.filter(item => item.status === "Contacted").length;
   const webCount = inquiries.filter(item => item.service === "Website Development").length;
   const mktCount = inquiries.filter(item => item.service.toLowerCase().includes("marketing") || item.service.toLowerCase().includes("social")).length;
+  const newAppsCount = applications.filter(item => !item.status || item.status === "New").length;
+  const reviewedAppsCount = applications.filter(item => item.status === "Reviewed").length;
+  const archivedAppsCount = applications.filter(item => item.status === "Archived").length;
+  const filteredApplications = applications.filter(item => {
+    const status = item.status || "New";
+    if (appFilter === "All") return true;
+    return status === appFilter;
+  });
+
+  if (authChecking) {
+    return (
+      <div className="flex flex-col min-h-screen bg-[#0B0B0C] text-slate-100 items-center justify-center">
+        <div className="text-center space-y-3">
+          <Loader2 className="w-8 h-8 animate-spin text-[#ff6a00] mx-auto" />
+          <p className="text-xs text-slate-500 font-light font-mono">Checking authorization session...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col min-h-screen bg-[#0B0B0C] text-slate-100 overflow-hidden">
-      <Navbar />
-
-      <main className="flex-grow pt-32 pb-20 relative">
+      <main className="flex-grow pt-16 pb-20 relative">
         {/* Background ambient lighting */}
         <div className="absolute top-0 left-1/4 w-96 h-96 bg-[#ff6a00]/10 rounded-full blur-[120px] pointer-events-none" />
         <div className="absolute bottom-10 right-1/4 w-96 h-96 bg-[#ff2b00]/5 rounded-full blur-[150px] pointer-events-none" />
@@ -461,23 +658,43 @@ export default function AdminDashboardClient() {
                     <div className="p-3 bg-[#ff6a00]/10 border border-[#ff6a00]/20 rounded-full w-fit mx-auto text-[#ff6a00]">
                       <Lock className="w-5 h-5" />
                     </div>
-                    <h3 className="text-lg font-bold text-white tracking-tight font-serif">Admin Passcode</h3>
-                    <p className="text-[11px] text-slate-500 font-light">Enter key to inspect consultation inbox</p>
+                    <h3 className="text-lg font-bold text-white tracking-tight font-serif">Admin Login</h3>
+                    <p className="text-[11px] text-slate-500 font-light">Sign in to access control panel</p>
                   </div>
 
                   <form onSubmit={handleLoginSubmit} className="space-y-4">
                     <div className="space-y-2">
-                      <label className="text-[9px] font-mono tracking-wider text-slate-400 uppercase font-semibold">
-                        Access Credentials
+                      <label className="text-[9px] font-mono tracking-wider text-slate-400 uppercase font-semibold block text-left">
+                        Email Address
                       </label>
-                      <input
-                        type="password"
-                        required
-                        placeholder="••••••••••••"
-                        value={passcode}
-                        onChange={(e) => setPasscode(e.target.value)}
-                        className="w-full px-4 py-3 rounded border border-white/[0.08] bg-[#1e1e24]/40 text-xs text-white placeholder-slate-655 focus:outline-none focus:border-[#ff6a00]/40 transition-all text-center font-mono"
-                      />
+                      <div className="relative">
+                        <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+                        <input
+                          type="email"
+                          required
+                          placeholder="admin@veila.com"
+                          value={email}
+                          onChange={(e) => setEmail(e.target.value)}
+                          className="w-full pl-10 pr-4 py-3 rounded border border-white/[0.08] bg-[#1e1e24]/40 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-[#ff6a00]/40 transition-all text-left"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <label className="text-[9px] font-mono tracking-wider text-slate-400 uppercase font-semibold block text-left">
+                        Password
+                      </label>
+                      <div className="relative">
+                        <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+                        <input
+                          type="password"
+                          required
+                          placeholder="••••••••••••"
+                          value={password}
+                          onChange={(e) => setPassword(e.target.value)}
+                          className="w-full pl-10 pr-4 py-3 rounded border border-white/[0.08] bg-[#1e1e24]/40 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-[#ff6a00]/40 transition-all text-left"
+                        />
+                      </div>
                     </div>
 
                     {loginError && (
@@ -488,9 +705,17 @@ export default function AdminDashboardClient() {
 
                     <button
                       type="submit"
-                      className="w-full py-3 rounded bg-gradient-to-r from-[#ff8a00] to-[#ff2b00] hover:from-[#ff6a00] hover:to-[#ff1200] text-xs font-semibold text-white tracking-wider uppercase transition-all shadow-sm cursor-pointer"
+                      disabled={loginLoading}
+                      className="w-full py-3 rounded bg-gradient-to-r from-[#ff8a00] to-[#ff2b00] hover:from-[#ff6a00] hover:to-[#ff1200] text-xs font-semibold text-white tracking-wider uppercase transition-all shadow-sm cursor-pointer flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
                     >
-                      Authenticate Access
+                      {loginLoading ? (
+                        <>
+                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                          Authenticating...
+                        </>
+                      ) : (
+                        "Sign In"
+                      )}
                     </button>
                   </form>
                 </div>
@@ -539,6 +764,21 @@ export default function AdminDashboardClient() {
                         }`}
                       >
                         Company Updates
+                      </button>
+                      <button
+                        onClick={() => { setActiveTab("applications"); setEditingPost(null); }}
+                        className={`px-3 py-1.5 rounded text-[10px] font-bold uppercase tracking-wider transition-all cursor-pointer flex items-center gap-1.5 ${
+                          activeTab === "applications"
+                            ? "bg-gradient-to-r from-[#ff8a00] to-[#ff2b00] text-white"
+                            : "text-slate-400 hover:text-white"
+                        }`}
+                      >
+                        <span>Job Applications</span>
+                        {newAppsCount > 0 && (
+                          <span className="px-1.5 py-0.5 rounded-full bg-rose-500 text-white text-[8px] font-bold shrink-0">
+                            {newAppsCount}
+                          </span>
+                        )}
                       </button>
                     </div>
 
@@ -986,14 +1226,207 @@ export default function AdminDashboardClient() {
                     )}
                   </div>
                 )}
+
+                {/* JOB APPLICATIONS PANEL */}
+                {activeTab === "applications" && (
+                  <div className="space-y-6">
+                    {/* Stats Summary Panel */}
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
+                      <div className="p-4 rounded-xl border border-white/[0.04] bg-[#16161a]/40 backdrop-blur-sm">
+                        <span className="text-[9px] font-mono tracking-wider text-slate-500 uppercase font-semibold block">Total Applications</span>
+                        <span className="text-2xl font-bold text-white mt-1 block">{applications.length}</span>
+                      </div>
+                      <div className="p-4 rounded-xl border border-white/[0.04] bg-[#16161a]/40 backdrop-blur-sm">
+                        <span className="text-[9px] font-mono tracking-wider text-slate-500 uppercase font-semibold block">New Candidates</span>
+                        <span className="text-2xl font-bold text-[#ff6a00] mt-1 block">{newAppsCount}</span>
+                      </div>
+                      <div className="p-4 rounded-xl border border-white/[0.04] bg-[#16161a]/40 backdrop-blur-sm">
+                        <span className="text-[9px] font-mono tracking-wider text-slate-500 uppercase font-semibold block">Reviewed</span>
+                        <span className="text-2xl font-bold text-green-500 mt-1 block">{reviewedAppsCount}</span>
+                      </div>
+                    </div>
+
+                    {/* Filters & Actions */}
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pt-4">
+                      <div className="flex items-center gap-2">
+                        <Filter className="w-3.5 h-3.5 text-slate-500" />
+                        <span className="text-xs text-slate-500 font-light">Filter status:</span>
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        {["All", "New", "Reviewed", "Archived"].map(cat => (
+                          <button
+                            key={cat}
+                            onClick={() => setAppFilter(cat)}
+                            className={`px-3 py-1.5 rounded-lg text-[9px] font-bold uppercase tracking-wider transition-all cursor-pointer ${
+                              appFilter === cat
+                                ? "bg-gradient-to-r from-[#ff8a00] to-[#ff2b00] text-white shadow-sm"
+                                : "bg-[#16161a] text-slate-400 hover:text-white border border-white/5"
+                            }`}
+                          >
+                            {cat}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Main Applications List */}
+                    {appLoading ? (
+                      <div className="py-24 text-center space-y-3">
+                        <Loader2 className="w-6 h-6 animate-spin text-[#ff6a00] mx-auto" />
+                        <p className="text-xs text-slate-500 font-light font-mono">Loading application columns...</p>
+                      </div>
+                    ) : filteredApplications.length === 0 ? (
+                      <div className="py-20 rounded-xl border border-dashed border-white/10 text-center space-y-2 bg-[#16161a]/20">
+                        <FileText className="w-8 h-8 text-slate-600 mx-auto" />
+                        <h4 className="text-sm font-semibold text-white">No applications found</h4>
+                        <p className="text-xs text-slate-500 font-light">Applications will appear here once candidates submit the careers form.</p>
+                      </div>
+                    ) : (
+                      <div className="space-y-4">
+                        {filteredApplications.map((item, idx) => {
+                          const itemDate = item.created_at ? new Date(item.created_at).toLocaleDateString("en-IN", {
+                            day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit"
+                          }) : "Unknown Date";
+
+                          const status = item.status || "New";
+                          const isExpanded = !!expandedApps[item.id || String(idx)];
+
+                          return (
+                            <motion.div
+                              key={item.id || idx}
+                              layout
+                              className="p-5 sm:p-6 rounded-xl border border-white/[0.04] bg-[#16161a]/50 backdrop-blur-sm space-y-4 hover:border-white/[0.08] transition-all"
+                            >
+                              {/* Header Row */}
+                              <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+                                <div className="space-y-1.5 text-left">
+                                  <div className="flex flex-wrap items-center gap-2">
+                                    <h3 className="text-base font-bold text-white tracking-tight">
+                                      {item.applicant_name}
+                                    </h3>
+                                    <span className="text-[10px] font-mono text-[#ff6a00] bg-[#ff6a00]/10 border border-[#ff6a00]/20 px-2 py-0.5 rounded font-bold uppercase shrink-0">
+                                      {item.job_title}
+                                    </span>
+                                    <span className={`text-[8px] font-mono tracking-wider px-2 py-0.5 rounded font-bold uppercase shrink-0 ${
+                                      status === "New"
+                                        ? "bg-rose-500/10 text-rose-400 border border-rose-500/20 animate-pulse"
+                                        : status === "Reviewed"
+                                        ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
+                                        : "bg-slate-500/10 text-slate-400 border border-slate-500/20"
+                                    }`}>
+                                      {status}
+                                    </span>
+                                  </div>
+
+                                  <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs text-slate-400 font-light">
+                                    <a href={`mailto:${item.applicant_email}`} className="hover:text-[#ff6a00] transition-colors flex items-center gap-1 font-semibold">
+                                      <Mail className="w-3.5 h-3.5" />
+                                      {item.applicant_email}
+                                    </a>
+                                    <a href={`tel:${item.applicant_phone}`} className="hover:text-[#ff6a00] transition-colors flex items-center gap-1 font-semibold">
+                                      <User className="w-3.5 h-3.5" />
+                                      {item.applicant_phone}
+                                    </a>
+                                  </div>
+                                </div>
+
+                                <div className="text-[10px] font-mono text-slate-500 text-left sm:text-right shrink-0">
+                                  {itemDate}
+                                </div>
+                              </div>
+
+                              {/* Details Toggle Button */}
+                              <div className="text-left pt-2 border-t border-white/[0.04]">
+                                <button
+                                  onClick={() => toggleExpandApp(item.id || String(idx))}
+                                  className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#ff6a00] hover:text-[#ff2b00] transition-colors cursor-pointer bg-transparent border-none outline-none focus:outline-none"
+                                >
+                                  <Eye className="w-4 h-4" />
+                                  <span>{isExpanded ? "Hide Cover Letter" : "Read Cover Letter"}</span>
+                                </button>
+
+                                {/* Collapsible Cover Letter Box */}
+                                <AnimatePresence>
+                                  {isExpanded && (
+                                    <motion.div
+                                      initial={{ height: 0, opacity: 0, marginTop: 0 }}
+                                      animate={{ height: "auto", opacity: 1, marginTop: 12 }}
+                                      exit={{ height: 0, opacity: 0, marginTop: 0 }}
+                                      className="overflow-hidden"
+                                    >
+                                      <div className="p-4 rounded-lg bg-black/40 border border-white/[0.04] text-slate-300 text-xs font-light leading-relaxed whitespace-pre-wrap">
+                                        {item.cover_letter}
+                                      </div>
+                                    </motion.div>
+                                  )}
+                                </AnimatePresence>
+                              </div>
+
+                              {/* Footer Action Controls */}
+                              <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-3 border-t border-white/[0.04] mt-2">
+                                <div className="flex flex-wrap items-center gap-3">
+                                  <a
+                                    href={item.resume_url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="px-3 py-1.5 rounded bg-[#16161a] border border-white/10 hover:border-[#ff6a00]/30 text-[10px] font-bold uppercase tracking-wider text-slate-300 hover:text-white transition-all inline-flex items-center gap-1"
+                                  >
+                                    <FileText className="w-3.5 h-3.5 text-[#ff6a00]" />
+                                    <span>Open Resume</span>
+                                  </a>
+                                  {item.portfolio_url && (
+                                    <a
+                                      href={item.portfolio_url}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="px-3 py-1.5 rounded bg-[#16161a] border border-white/10 hover:border-[#ff6a00]/30 text-[10px] font-bold uppercase tracking-wider text-slate-300 hover:text-white transition-all inline-flex items-center gap-1"
+                                    >
+                                      <Sparkles className="w-3.5 h-3.5 text-[#ff6a00]" />
+                                      <span>Open Portfolio</span>
+                                    </a>
+                                  )}
+                                </div>
+
+                                <div className="flex items-center justify-end gap-2 shrink-0">
+                                  {status !== "Reviewed" && (
+                                    <button
+                                      onClick={() => updateApplicationStatus(item.id || String(idx), "Reviewed")}
+                                      className="px-3 py-1.5 border border-emerald-500/20 hover:bg-emerald-500/[0.05] text-[10px] uppercase tracking-wider text-emerald-400 hover:text-emerald-300 rounded transition-all font-semibold font-mono bg-black/40 cursor-pointer flex items-center gap-1"
+                                    >
+                                      <CheckCircle className="w-3.5 h-3.5" />
+                                      <span>Mark Reviewed</span>
+                                    </button>
+                                  )}
+                                  {status !== "Archived" && (
+                                    <button
+                                      onClick={() => updateApplicationStatus(item.id || String(idx), "Archived")}
+                                      className="px-3 py-1.5 border border-white/10 hover:bg-white/5 text-[10px] uppercase tracking-wider text-slate-300 hover:text-white rounded transition-all font-semibold font-mono bg-black/40 cursor-pointer"
+                                    >
+                                      Archive
+                                    </button>
+                                  )}
+                                  <button
+                                    onClick={() => deleteApplication(item.id || String(idx))}
+                                    className="p-1.5 border border-rose-500/20 hover:bg-rose-500/[0.05] text-rose-500 hover:text-rose-400 rounded transition-all cursor-pointer bg-transparent"
+                                    aria-label="Delete application"
+                                  >
+                                    <Trash2 className="w-4 h-4" />
+                                  </button>
+                                </div>
+                              </div>
+                            </motion.div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                )}
               </motion.div>
             )}
           </AnimatePresence>
 
         </div>
       </main>
-
-      <Footer />
     </div>
   );
 }

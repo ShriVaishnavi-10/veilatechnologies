@@ -181,20 +181,21 @@ export default function Navbar() {
                     <stop offset="100%" stopColor="#FF1F00" />
                   </linearGradient>
                 </defs>
-                {/* Outer Play Button Loop and Right Leg of V (Path 1) */}
+                {/* Outer Play Button Loop (Path 1) */}
                 <path
-                  d="M 42 76 C 34 76, 30 73, 30 66 L 30 34 C 30 27, 34 22, 42 22 L 74 39 C 80 42, 80 58, 74 61 L 57 70 C 51 73, 47 71, 48 63 L 56 44"
+                  d="M 42 80 C 34 80, 30 76, 30 68 L 30 32 C 30 24, 34 20, 42 20 L 76 38 C 82 41, 82 59, 76 62 L 52 72"
                   stroke="url(#navOrangeRed)"
                   strokeWidth="10"
                   strokeLinecap="round"
                   strokeLinejoin="round"
                 />
-                {/* Left Leg of V (Path 2) */}
+                {/* Floating V (Path 2) */}
                 <path
-                  d="M 40 44 L 48 63"
+                  d="M 41 42 L 48 59 L 55 42"
                   stroke="url(#navOrangeRed)"
                   strokeWidth="9.5"
                   strokeLinecap="round"
+                  strokeLinejoin="round"
                 />
               </svg>
             </motion.div>
