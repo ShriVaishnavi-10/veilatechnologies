@@ -9,9 +9,8 @@ export default function Preloader() {
   const [isFinished, setIsFinished] = useState(false);
   const [loading, setLoading] = useState(() => {
     if (typeof window !== "undefined") {
-      const isRefresh = (performance.getEntriesByType("navigation")[0] as PerformanceNavigationTiming)?.type === "reload";
       const played = sessionStorage.getItem("veila_preloader_played") === "true";
-      return isRefresh || !played;
+      return !played;
     }
     return true;
   });
@@ -22,6 +21,12 @@ export default function Preloader() {
     setMounted(true);
     // Lock scrolling on mount
     document.body.style.overflow = "hidden";
+
+    // Mark as loaded immediately to prevent repeat preloads if user navigates during curtain animation
+    if (typeof window !== "undefined") {
+      (window as any).veila_preloader_loaded = true;
+      sessionStorage.setItem("veila_preloader_played", "true");
+    }
 
     const duration = 1500; // Total loading duration in ms
     const startTime = performance.now();
@@ -59,7 +64,6 @@ export default function Preloader() {
             // Step 3: Wait 800ms (curtain animation length), then fully unmount component
             t3 = setTimeout(() => {
               setLoading(false);
-              sessionStorage.setItem("veila_preloader_played", "true");
             }, 800);
           }, 300);
         }, 350);
