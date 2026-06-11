@@ -1,17 +1,139 @@
 "use client";
 
 import React, { useState } from "react";
-import { CheckCircle2, Building2, Briefcase, Mail, MapPin, Calendar, Clock, Award, X, Loader2 } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { CheckCircle2, Building2, Briefcase, Mail, MapPin, Clock, Award, X, Loader2 } from "lucide-react";
+import { motion, AnimatePresence, type Variants, useMotionValue, useSpring, useTransform } from "framer-motion";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { CompanyDetail, jobOpeningsList } from "@/lib/companyData";
 import { supabase, isSupabaseConfigured } from "@/lib/supabase";
+import Magnetic from "@/components/Magnetic";
+
+const valuesContainerVariants: Variants = {
+  hidden: {},
+  visible: {
+    transition: {
+      staggerChildren: 0.12,
+      delayChildren: 0.1
+    }
+  }
+};
+
+const valueItemVariants: Variants = {
+  hidden: { opacity: 0, x: -30, scaleX: 0.05, filter: "blur(6px)" },
+  visible: {
+    opacity: 1,
+    x: 0,
+    scaleX: 1,
+    filter: "blur(0px)",
+    transition: { type: "spring", stiffness: 70, damping: 15 }
+  }
+};
 
 const iconMap = {
   about: Building2,
   careers: Briefcase,
 };
+
+function JobOpeningCard({ job, itemVariants, idx, onApply }: {
+  job: typeof jobOpeningsList[0];
+  itemVariants: Variants;
+  idx: number;
+  onApply: (title: string) => void;
+}) {
+  const mx = useMotionValue(0);
+  const my = useMotionValue(0);
+
+  const contentX = useSpring(useTransform(mx, [-0.5, 0.5], [-8, 8]), { stiffness: 200, damping: 25 });
+  const contentY = useSpring(useTransform(my, [-0.5, 0.5], [-8, 8]), { stiffness: 200, damping: 25 });
+
+  const handleMouseMove = (event: React.MouseEvent<HTMLDivElement>) => {
+    const rect = event.currentTarget.getBoundingClientRect();
+    const width = rect.width;
+    const height = rect.height;
+    const mouseX = event.clientX - rect.left;
+    const mouseY = event.clientY - rect.top;
+    
+    mx.set((mouseX - width / 2) / width);
+    my.set((mouseY - height / 2) / height);
+  };
+
+  const handleMouseLeave = () => {
+    mx.set(0);
+    my.set(0);
+  };
+
+  return (
+    <Magnetic range={150} strength={0.08}>
+      <div className="flex w-full">
+        <motion.div
+          variants={itemVariants}
+          custom={idx}
+          onMouseMove={handleMouseMove}
+          onMouseLeave={handleMouseLeave}
+          style={{ originX: 0, zIndex: 10 - idx }}
+          whileHover={{ 
+            scale: 1.01, 
+            borderColor: "rgba(255, 106, 0, 0.25)", 
+            boxShadow: "0 20px 40px -15px rgba(255, 106, 0, 0.12)",
+            backgroundColor: "rgba(22, 22, 26, 0.98)" 
+          }}
+          className="p-6 sm:p-8 rounded-xl border border-white/[0.04] bg-[#16161a]/40 transition-all duration-300 text-left w-full cursor-pointer relative overflow-hidden"
+        >
+          <motion.div style={{ x: contentX, y: contentY }} className="flex flex-col lg:flex-row lg:items-start justify-between gap-6 w-full">
+            <div className="space-y-4 text-left w-full">
+              <div className="flex flex-wrap items-center gap-3">
+                <span className="text-[10px] font-mono text-[#ff6a00] bg-[#ff6a00]/10 border border-[#ff6a00]/20 px-2 py-0.5 rounded font-bold uppercase">
+                  {job.department}
+                </span>
+                <span className="inline-flex items-center gap-1 text-[10px] text-slate-400 font-mono">
+                  <MapPin className="w-3 h-3" />
+                  {job.location}
+                </span>
+                <span className="inline-flex items-center gap-1 text-[10px] text-slate-400 font-mono">
+                  <Clock className="w-3 h-3" />
+                  {job.experience}
+                </span>
+              </div>
+              <h3 className="text-lg font-bold text-white tracking-tight">{job.title}</h3>
+              <p className="text-slate-300 text-xs font-light leading-relaxed max-w-3xl">
+                {job.description}
+              </p>
+              
+              {/* Requirements list */}
+              <div className="space-y-2 pt-2">
+                <h4 className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Core Requirements:</h4>
+                <ul className="space-y-1">
+                  {job.requirements.map((req, rIdx) => (
+                    <li key={rIdx} className="flex items-center gap-2 text-xs text-slate-300 font-light text-left">
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#ff6a00]/50 shrink-0"></span>
+                      <span>{req}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+
+            {/* Apply CTA Button */}
+            <div className="shrink-0 pt-2 lg:pt-0">
+              <Magnetic range={60} strength={0.3}>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onApply(job.title);
+                  }}
+                  className="px-4 py-2.5 rounded-lg text-xs font-bold uppercase tracking-wider text-white bg-gradient-to-r from-[#ff8a00] to-[#ff2b00] hover:from-[#ff7300] hover:to-[#ff1a00] shadow-sm transition-all inline-flex items-center justify-center cursor-pointer border-none outline-none focus:outline-none"
+                >
+                  Apply Now
+                </button>
+              </Magnetic>
+            </div>
+          </motion.div>
+        </motion.div>
+      </div>
+    </Magnetic>
+  );
+}
 
 interface CompanyDetailClientProps {
   company: CompanyDetail;
@@ -117,8 +239,8 @@ export default function CompanyDetailClient({ company }: CompanyDetailClientProp
       setResumeFile(null);
       setPortfolioUrl("");
       setCoverLetter("");
-    } catch (err: any) {
-      const rawMsg = err.message || "Unknown error";
+    } catch (err) {
+      const rawMsg = err instanceof Error ? err.message : String(err);
       let errMsg = rawMsg;
       if (rawMsg.toLowerCase().includes("bucket") && (rawMsg.toLowerCase().includes("not found") || rawMsg.toLowerCase().includes("exist"))) {
         errMsg = "Supabase Storage bucket 'resumes' was not found. Please create a PUBLIC bucket named 'resumes' in your Supabase dashboard -> Storage, and add SELECT/INSERT policies to enable uploads.";
@@ -129,8 +251,28 @@ export default function CompanyDetailClient({ company }: CompanyDetailClientProp
     }
   };
 
+  const containerVariants: Variants = {
+    hidden: {},
+    visible: {
+      transition: {
+        staggerChildren: 0.1,
+      },
+    },
+  };
+
+  const itemVariants: Variants = {
+    hidden: { opacity: 0, x: -40, scaleX: 0.05, filter: "blur(8px)" },
+    visible: {
+      opacity: 1,
+      x: 0,
+      scaleX: 1,
+      filter: "blur(0px)",
+      transition: { type: "spring", stiffness: 70, damping: 15 }
+    }
+  };
+
   return (
-    <div className="flex flex-col min-h-screen bg-[#0B0B0C] text-slate-100 overflow-hidden">
+    <div key={company.slug} className="flex flex-col min-h-screen bg-[#0B0B0C] text-slate-100 overflow-hidden">
       {/* Floating Header */}
       <Navbar />
 
@@ -145,23 +287,49 @@ export default function CompanyDetailClient({ company }: CompanyDetailClientProp
           {/* Hero Section */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center mb-20">
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 25 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
               className="lg:col-span-7 space-y-8"
             >
               <div className="space-y-4">
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#ff6a00]/10 border border-[#ff6a00]/20">
+                <motion.div
+                  initial={{ opacity: 0, y: -8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5 }}
+                  className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#ff6a00]/10 border border-[#ff6a00]/20"
+                >
                   <span className="text-[10px] font-mono tracking-widest text-[#ff6a00] uppercase font-bold">
                     {company.category}
                   </span>
-                </div>
-                <h1 className="font-serif text-4xl sm:text-6xl font-medium tracking-tight text-white leading-tight">
-                  {company.title}
+                </motion.div>
+                <h1 className="font-serif text-4xl sm:text-6xl font-medium tracking-tight text-white leading-tight flex flex-wrap gap-x-[0.2em] overflow-hidden">
+                  {company.title.split(" ").map((word, idx) => (
+                    <span key={idx} className="inline-block overflow-hidden py-1">
+                      <motion.span
+                        inherit={false}
+                        initial={{ y: "100%", opacity: 0 }}
+                        animate={{ y: 0, opacity: 1 }}
+                        transition={{
+                          duration: 0.8,
+                          ease: [0.16, 1, 0.3, 1],
+                          delay: idx * 0.05
+                        }}
+                        className="inline-block"
+                      >
+                        {word}
+                      </motion.span>
+                    </span>
+                  ))}
                 </h1>
-                <p className="text-base sm:text-lg text-slate-400 font-light leading-relaxed max-w-2xl">
+                <motion.p
+                  initial={{ opacity: 0, y: 15 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6, delay: 0.15 }}
+                  className="text-base sm:text-lg text-slate-400 font-light leading-relaxed max-w-2xl"
+                >
                   {company.description}
-                </p>
+                </motion.p>
               </div>
 
               {/* Core Details */}
@@ -170,14 +338,23 @@ export default function CompanyDetailClient({ company }: CompanyDetailClientProp
                   <IconComponent className="w-4 h-4 text-[#ff6a00]" />
                   <span>At a glance</span>
                 </h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                <motion.div
+                  variants={containerVariants}
+                  initial="hidden"
+                  animate="visible"
+                  className="grid grid-cols-1 sm:grid-cols-2 gap-3.5"
+                >
                   {company.details.map((detail, idx) => (
-                    <div key={idx} className="flex items-start gap-2.5 text-xs text-slate-300 font-light">
+                    <motion.div
+                      key={idx}
+                      variants={itemVariants}
+                      className="flex items-start gap-2.5 text-xs text-slate-300 font-light"
+                    >
                       <CheckCircle2 className="w-4 h-4 text-[#ff6a00] mt-0.5 shrink-0" />
                       <span>{detail}</span>
-                    </div>
+                    </motion.div>
                   ))}
-                </div>
+                </motion.div>
               </div>
             </motion.div>
 
@@ -207,15 +384,16 @@ export default function CompanyDetailClient({ company }: CompanyDetailClientProp
 
           {/* Conditional Layout Injection: About Company details */}
           {company.slug === "about" && (
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-              className="border-t border-white/[0.04] pt-16 sm:pt-24 space-y-12"
-            >
+            <div className="border-t border-white/[0.04] pt-16 sm:pt-24 space-y-12">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-start">
                 {/* Story and Mission */}
-                <div className="space-y-6 text-left">
+                <motion.div
+                  initial={{ opacity: 0, x: -30 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  viewport={{ once: false, amount: 0.15 }}
+                  transition={{ duration: 0.6 }}
+                  className="space-y-6 text-left"
+                >
                   <h3 className="text-sm font-bold uppercase tracking-wider text-[#ff6a00] font-mono">Our Narrative</h3>
                   <p className="text-slate-300 text-sm font-light leading-relaxed">
                     Veila Technologies was established in 2026 with a vision to make premium digital solutions accessible to businesses globally. We specialize in building fast Next.js websites, optimizing organic search ranking routes, scaling marketing reach, and structuring engaging content.
@@ -223,118 +401,115 @@ export default function CompanyDetailClient({ company }: CompanyDetailClientProp
                   <p className="text-slate-300 text-sm font-light leading-relaxed">
                     Based in Virudhunagar, Tamilnadu, we have designed a 100% remote working model that gathers top technology talent to deliver standard-compliant web architectures worldwide.
                   </p>
-                </div>
+                </motion.div>
 
                 {/* Values Box Grid */}
-                <div className="p-6 sm:p-8 rounded-xl border border-white/[0.04] bg-[#16161a]/40 space-y-6">
+                <motion.div
+                  initial={{ opacity: 0, x: 30 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  viewport={{ once: false, amount: 0.15 }}
+                  transition={{ duration: 0.6 }}
+                  whileHover={{ scale: 1.01, borderColor: "rgba(255, 106, 0, 0.25)" }}
+                  className="p-6 sm:p-8 rounded-xl border border-white/[0.04] bg-[#16161a]/40 space-y-6 transition-all duration-300"
+                >
                   <h3 className="text-sm font-bold uppercase tracking-wider text-white flex items-center gap-2">
                     <Award className="w-4 h-4 text-[#ff6a00]" />
                     <span>Our Core Values</span>
                   </h3>
-                  <div className="space-y-4">
-                    <div className="flex gap-3 items-start">
+                  <motion.div
+                    variants={valuesContainerVariants}
+                    initial="hidden"
+                    whileInView="visible"
+                    viewport={{ once: false, amount: 0.15 }}
+                    className="space-y-4 text-left"
+                  >
+                    <motion.div variants={valueItemVariants} style={{ originX: 0 }} className="flex gap-3 items-start">
                       <span className="w-1.5 h-1.5 rounded-full bg-[#ff6a00] mt-2 shrink-0"></span>
                       <div>
                         <h4 className="text-xs font-bold text-white uppercase tracking-wider">Quality Engineering</h4>
                         <p className="text-[11px] text-slate-400 font-light mt-0.5">We write clean, standard-compliant code, ensuring maximum performance and SEO capabilities.</p>
                       </div>
-                    </div>
-                    <div className="flex gap-3 items-start">
+                    </motion.div>
+                    <motion.div variants={valueItemVariants} style={{ originX: 0 }} className="flex gap-3 items-start">
                       <span className="w-1.5 h-1.5 rounded-full bg-[#ff6a00] mt-2 shrink-0"></span>
                       <div>
                         <h4 className="text-xs font-bold text-white uppercase tracking-wider">Direct Trust</h4>
                         <p className="text-[11px] text-slate-400 font-light mt-0.5">Direct communication with lead engineers and strategists, avoiding middle-management delays.</p>
                       </div>
-                    </div>
-                    <div className="flex gap-3 items-start">
+                    </motion.div>
+                    <motion.div variants={valueItemVariants} style={{ originX: 0 }} className="flex gap-3 items-start">
                       <span className="w-1.5 h-1.5 rounded-full bg-[#ff6a00] mt-2 shrink-0"></span>
                       <div>
                         <h4 className="text-xs font-bold text-white uppercase tracking-wider">Business Impact</h4>
                         <p className="text-[11px] text-slate-400 font-light mt-0.5">Every layout choice, design grid, and copywriting piece is engineered to capture leads and drive sales.</p>
                       </div>
-                    </div>
-                  </div>
-                </div>
+                    </motion.div>
+                  </motion.div>
+                </motion.div>
               </div>
-            </motion.div>
+            </div>
           )}
 
           {/* Conditional Layout Injection: Careers Listing details */}
           {company.slug === "careers" && (
             <motion.div
               initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.2 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: false, amount: 0.15 }}
+              transition={{ duration: 0.6 }}
               className="border-t border-white/[0.04] pt-16 sm:pt-24 space-y-12"
             >
               <div className="max-w-xl">
                 <h2 className="text-[11px] font-mono tracking-widest text-[#ff6a00] uppercase font-semibold">
                   Open Positions
                 </h2>
-                <p className="mt-3 font-serif text-3xl sm:text-4xl font-medium tracking-tight text-white">
-                  Work with us from anywhere
-                </p>
+                <h2 className="mt-3 font-serif text-3xl sm:text-4xl font-medium tracking-tight text-white flex flex-wrap gap-x-[0.2em] overflow-hidden">
+                  {"Work with us from anywhere".split(" ").map((word, idx) => (
+                    <span key={idx} className="inline-block overflow-hidden py-1">
+                      <motion.span
+                        inherit={false}
+                        initial={{ y: "100%", opacity: 0 }}
+                        whileInView={{ y: 0, opacity: 1 }}
+                        viewport={{ once: false, amount: 0.15 }}
+                        transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: idx * 0.05 }}
+                        className="inline-block"
+                      >
+                        {word}
+                      </motion.span>
+                    </span>
+                  ))}
+                </h2>
               </div>
 
               {/* Job Listings stack */}
-              <div className="space-y-6">
+              <motion.div
+                variants={containerVariants}
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: false, amount: 0.15 }}
+                className="space-y-6"
+              >
                 {jobOpeningsList.map((job, idx) => (
-                  <motion.div
+                  <JobOpeningCard
                     key={idx}
-                    whileHover={{ scale: 1.005 }}
-                    className="p-6 sm:p-8 rounded-xl border border-white/[0.04] bg-[#16161a]/40 hover:border-[#ff6a00]/30 hover:bg-[#16161a]/95 transition-all duration-300"
-                  >
-                    <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-6">
-                      <div className="space-y-4 text-left">
-                        <div className="flex flex-wrap items-center gap-3">
-                          <span className="text-[10px] font-mono text-[#ff6a00] bg-[#ff6a00]/10 border border-[#ff6a00]/20 px-2 py-0.5 rounded font-bold uppercase">
-                            {job.department}
-                          </span>
-                          <span className="inline-flex items-center gap-1 text-[10px] text-slate-400 font-mono">
-                            <MapPin className="w-3 h-3" />
-                            {job.location}
-                          </span>
-                          <span className="inline-flex items-center gap-1 text-[10px] text-slate-400 font-mono">
-                            <Clock className="w-3 h-3" />
-                            {job.experience}
-                          </span>
-                        </div>
-                        <h3 className="text-lg font-bold text-white tracking-tight">{job.title}</h3>
-                        <p className="text-slate-300 text-xs font-light leading-relaxed max-w-3xl">
-                          {job.description}
-                        </p>
-                        
-                        {/* Requirements list */}
-                        <div className="space-y-2 pt-2">
-                          <h4 className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Core Requirements:</h4>
-                          <ul className="space-y-1">
-                            {job.requirements.map((req, rIdx) => (
-                              <li key={rIdx} className="flex items-center gap-2 text-xs text-slate-300 font-light">
-                                <span className="w-1.5 h-1.5 rounded-full bg-[#ff6a00]/50 shrink-0"></span>
-                                <span>{req}</span>
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-                      </div>
-
-                      {/* Apply CTA Button */}
-                      <div className="shrink-0 pt-2 lg:pt-0">
-                        <button
-                          onClick={() => handleOpenApplyModal(job.title)}
-                          className="px-4 py-2.5 rounded-lg text-xs font-bold uppercase tracking-wider text-white bg-gradient-to-r from-[#ff8a00] to-[#ff2b00] hover:from-[#ff7300] hover:to-[#ff1a00] shadow-sm transition-all inline-flex items-center justify-center cursor-pointer border-none outline-none focus:outline-none"
-                        >
-                          Apply Now
-                        </button>
-                      </div>
-                    </div>
-                  </motion.div>
+                    job={job}
+                    itemVariants={itemVariants}
+                    idx={idx}
+                    onApply={handleOpenApplyModal}
+                  />
                 ))}
-              </div>
+              </motion.div>
 
               {/* General Job Submission Footer CTA */}
-              <div className="p-8 sm:p-10 rounded-2xl border border-white/[0.06] bg-[#16161a]/30 shadow-xl text-center max-w-3xl mx-auto">
-                <h3 className="font-serif text-xl sm:text-2xl font-medium text-white mb-2">Don't see a suitable role?</h3>
+              <motion.div
+                initial={{ opacity: 0, y: 45 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: false, amount: 0.15 }}
+                transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+                whileHover={{ scale: 1.01, borderColor: "rgba(255, 106, 0, 0.2)", boxShadow: "0 20px 40px -15px rgba(255, 106, 0, 0.1)" }}
+                className="p-8 sm:p-10 rounded-2xl border border-white/[0.06] bg-[#16161a]/30 shadow-xl text-center max-w-3xl mx-auto transition-all duration-300"
+              >
+                <h3 className="font-serif text-xl sm:text-2xl font-medium text-white mb-2">Don&apos;t see a suitable role?</h3>
                 <p className="text-xs text-slate-400 font-light mb-6 max-w-lg mx-auto">
                   We are always looking for passionate React/Next.js developers, creative designers, and growth hackers. Send your resume for future considerations.
                 </p>
@@ -345,7 +520,7 @@ export default function CompanyDetailClient({ company }: CompanyDetailClientProp
                   <Mail className="w-4 h-4" />
                   <span>veilatechnologies@gmail.com</span>
                 </a>
-              </div>
+              </motion.div>
             </motion.div>
           )}
 
@@ -363,10 +538,10 @@ export default function CompanyDetailClient({ company }: CompanyDetailClientProp
           >
             {/* Modal Box */}
             <motion.div
-              initial={{ scale: 0.95, y: 15 }}
-              animate={{ scale: 1, y: 0 }}
-              exit={{ scale: 0.95, y: 15 }}
-              transition={{ duration: 0.25, ease: "easeOut" }}
+              initial={{ scale: 0.9, y: 30, opacity: 0 }}
+              animate={{ scale: 1, y: 0, opacity: 1 }}
+              exit={{ scale: 0.9, y: 30, opacity: 0 }}
+              transition={{ type: "spring", stiffness: 220, damping: 18 }}
               className="relative w-full max-w-lg rounded-2xl border border-white/[0.08] bg-[#16161a] p-6 sm:p-8 shadow-2xl overflow-y-auto max-h-[90vh] text-left"
             >
               {/* Close Button */}

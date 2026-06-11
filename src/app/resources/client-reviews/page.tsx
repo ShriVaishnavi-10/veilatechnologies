@@ -44,6 +44,28 @@ const clientReviewsList = [
   }
 ];
 
+const containerVariants = {
+  hidden: {},
+  visible: {
+    transition: {
+      staggerChildren: 0.1,
+    },
+  },
+};
+
+const cardVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      type: "spring",
+      stiffness: 80,
+      damping: 16,
+    },
+  },
+};
+
 export default function ClientReviewsPage() {
   return (
     <div className="flex flex-col min-h-screen bg-[#0B0B0C] text-slate-100 overflow-hidden">
@@ -102,12 +124,19 @@ export default function ClientReviewsPage() {
 
           {/* Reviews Grid */}
           <div className="border-t border-white/[0.04] pt-12">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-stretch">
+            <motion.div
+              variants={containerVariants}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: false, amount: 0.15 }}
+              className="grid grid-cols-1 md:grid-cols-2 gap-8 items-stretch"
+            >
               {clientReviewsList.map((review, idx) => (
                 <motion.div
                   key={idx}
-                  whileHover={{ y: -3 }}
-                  className="p-6 sm:p-8 rounded-xl border border-white/[0.04] bg-[#16161a]/40 hover:border-[#ff6a00]/30 hover:bg-[#16161a]/95 hover:shadow-md transition-all duration-300 flex flex-col justify-between"
+                  variants={cardVariants}
+                  whileHover={{ y: -5, borderColor: "rgba(255, 106, 0, 0.35)", backgroundColor: "rgba(22, 22, 26, 0.98)" }}
+                  className="p-6 sm:p-8 rounded-xl border border-white/[0.04] bg-[#16161a]/40 hover:shadow-md transition-all duration-300 flex flex-col justify-between"
                 >
                   <div className="space-y-4">
                     {/* Ratings stars */}
@@ -119,7 +148,7 @@ export default function ClientReviewsPage() {
                     
                     {/* Review body */}
                     <p className="text-slate-300 text-xs italic font-light leading-relaxed">
-                      "{review.review}"
+                      &ldquo;{review.review}&rdquo;
                     </p>
                   </div>
 
@@ -134,7 +163,7 @@ export default function ClientReviewsPage() {
                   </div>
                 </motion.div>
               ))}
-            </div>
+            </motion.div>
           </div>
         </div>
       </main>

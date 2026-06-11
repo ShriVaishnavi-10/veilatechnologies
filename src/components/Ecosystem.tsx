@@ -83,31 +83,35 @@ export default function Ecosystem() {
             </p>
 
             {/* Selector Buttons */}
-            <div className="flex flex-col gap-3 pt-4">
-              {[
+            <div className="flex flex-col gap-3 pt-4 relative">
+              {([
                 { id: "migrations", label: "Schema Migrations", icon: <Database className="w-4 h-4" /> },
                 { id: "endpoints", label: "API Endpoint Routing", icon: <Link className="w-4 h-4" /> },
                 { id: "provision", label: "Infrastructure Triggers", icon: <Terminal className="w-4 h-4" /> },
-              ].map((tab) => (
+              ] as const).map((tab) => (
                 <button
                   key={tab.id}
                   onClick={() => {
-                    setActiveTab(tab.id as any);
+                    setActiveTab(tab.id);
                     setLogs([]);
                   }}
-                  className={`w-full flex items-center justify-between p-4 rounded-lg border transition-all duration-200 text-left ${
-                    activeTab === tab.id
-                      ? "bg-white border-[#970747]/[0.1] text-[#970747] shadow-[0_1px_3px_rgba(151,7,71,0.02)]"
-                      : "bg-transparent border-transparent text-slate-500 hover:text-slate-800"
+                  className={`w-full flex items-center justify-between p-4 rounded-lg border border-transparent hover:text-slate-800 transition-colors duration-200 text-left relative overflow-hidden group ${
+                    activeTab === tab.id ? "text-[#970747]" : "text-slate-500"
                   }`}
                 >
-                  <div className="flex items-center gap-3">
-                    <span className={activeTab === tab.id ? "text-[#970747]" : "text-slate-400"}>
+                  {activeTab === tab.id && (
+                    <motion.div
+                      layoutId="activeEcoTab"
+                      className="absolute inset-0 bg-white border border-[#970747]/[0.1] rounded-lg shadow-[0_1px_3px_rgba(151,7,71,0.02)] z-0"
+                    />
+                  )}
+                  <div className="flex items-center gap-3 relative z-10">
+                    <span className={activeTab === tab.id ? "text-[#970747]" : "text-slate-400 group-hover:text-slate-600 transition-colors"}>
                       {tab.icon}
                     </span>
                     <span className="font-sans text-xs font-semibold uppercase tracking-wider">{tab.label}</span>
                   </div>
-                  {activeTab === tab.id && <span className="w-1.5 h-1.5 rounded-full bg-[#970747]"></span>}
+                  {activeTab === tab.id && <span className="w-1.5 h-1.5 rounded-full bg-[#970747] relative z-10"></span>}
                 </button>
               ))}
             </div>

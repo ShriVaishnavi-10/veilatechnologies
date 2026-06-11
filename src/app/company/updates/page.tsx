@@ -7,6 +7,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { companyUpdatesList, CompanyUpdate, mapDBUpdateToCompanyUpdate } from "@/lib/updatesData";
 import { supabase, isSupabaseConfigured } from "@/lib/supabase";
+import Magnetic from "@/components/Magnetic";
 
 function highlightText(text: string, highlight: string) {
   if (!highlight || !highlight.trim()) {
@@ -136,12 +137,19 @@ export default function CompanyUpdatesPage() {
                 <button
                   key={cat}
                   onClick={() => setActiveCategory(cat)}
-                  className={`px-4 py-1.5 rounded-full text-xs font-semibold uppercase tracking-wider transition-all duration-300 border cursor-pointer ${
+                  className={`px-4 py-1.5 rounded-full text-xs font-semibold uppercase tracking-wider transition-all duration-300 border cursor-pointer relative ${
                     activeCategory === cat
-                      ? "bg-[#ff6a00] border-[#ff6a00] text-white shadow-lg shadow-[#ff6a00]/20"
+                      ? "border-transparent text-white z-10 font-bold"
                       : "bg-[#16161a]/60 border-white/[0.04] text-slate-400 hover:text-white hover:border-white/10"
                   }`}
                 >
+                  {activeCategory === cat && (
+                    <motion.span
+                      layoutId="activeCategoryPill"
+                      className="absolute inset-0 bg-gradient-to-r from-[#ff8a00] to-[#ff2b00] rounded-full -z-10 shadow-lg shadow-[#ff6a00]/20"
+                      transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                    />
+                  )}
                   {cat}
                 </button>
               ))}
@@ -169,70 +177,92 @@ export default function CompanyUpdatesPage() {
               </div>
             ) : filteredUpdates.length > 0 ? (
               <div className="relative pl-6 sm:pl-12 border-l border-white/[0.06] space-y-16 py-4">
+                {/* Timeline active line overlay */}
+                <motion.div
+                  initial={{ scaleY: 0 }}
+                  whileInView={{ scaleY: 1 }}
+                  viewport={{ once: false, amount: 0.15 }}
+                  transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1], delay: 0.1 }}
+                  style={{ originY: 0 }}
+                  className="absolute left-0 top-0 bottom-0 w-[1.5px] bg-gradient-to-b from-[#ff8a00] to-[#ff2b00] origin-top z-10"
+                />
+
                 <AnimatePresence mode="popLayout">
-                  {filteredUpdates.map((update, idx) => (
+                  {filteredUpdates.map((update) => (
                     <motion.div
                       key={update.id}
-                      initial={{ opacity: 0, x: -10 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      exit={{ opacity: 0, x: 10 }}
-                      transition={{ duration: 0.4, delay: idx * 0.05 }}
+                      initial={{ opacity: 0, x: -30 }}
+                      whileInView={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: 30 }}
+                      viewport={{ once: false, amount: 0.15 }}
+                      transition={{ duration: 0.6, type: "spring", stiffness: 80, damping: 15 }}
                       className="relative"
                     >
                       {/* Timeline Dot Indicator */}
-                      <span className="absolute -left-[31px] sm:-left-[55px] top-1.5 w-3 h-3 rounded-full bg-[#ff6a00] border-4 border-[#0B0B0C] shadow-lg shadow-[#ff6a00]/30 z-10" />
+                      <motion.span
+                        initial={{ scale: 0, boxShadow: "0 0 0px rgba(255, 106, 0, 0)" }}
+                        whileInView={{ scale: 1, boxShadow: "0 0 16px rgba(255, 106, 0, 0.8)" }}
+                        viewport={{ once: false, amount: 0.15 }}
+                        transition={{ type: "spring", stiffness: 200, damping: 12, delay: 0.1 }}
+                        className="absolute -left-[31.5px] sm:-left-[55.5px] top-1.5 w-3 h-3 rounded-full bg-[#ff6a00] border-4 border-[#0B0B0C] z-10"
+                      />
 
                       {/* Main Card */}
-                      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch bg-[#16161a]/30 rounded-2xl border border-white/[0.04] hover:border-[#ff6a00]/20 p-6 sm:p-8 hover:bg-[#16161a]/70 transition-all duration-300">
-                        
-                        {/* Image Column */}
-                        <div className="lg:col-span-4 relative rounded-xl overflow-hidden aspect-[16/10] lg:aspect-auto min-h-[160px] border border-white/[0.04]">
-                          <img
-                            src={update.imageUrl}
-                            alt={update.title}
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
+                      <Magnetic range={150} strength={0.06}>
+                        <motion.div
+                          whileHover={{ scale: 1.015, borderColor: "rgba(255, 106, 0, 0.25)", boxShadow: "0 15px 30px -10px rgba(255, 106, 0, 0.1)" }}
+                          className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch bg-[#16161a]/30 rounded-2xl border border-white/[0.04] p-6 sm:p-8 hover:bg-[#16161a]/70 transition-all duration-300 cursor-pointer"
+                        >
+                          
+                          {/* Image Column */}
+                          <div className="lg:col-span-4 relative rounded-xl overflow-hidden aspect-[16/10] lg:aspect-auto min-h-[160px] border border-white/[0.04]">
+                            <img
+                              src={update.imageUrl}
+                              alt={update.title}
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
 
-                        {/* Content Column */}
-                        <div className="lg:col-span-8 flex flex-col justify-between space-y-4">
-                          <div className="space-y-3">
-                            {/* Metadata */}
-                            <div className="flex flex-wrap items-center gap-3 text-[10px] font-mono text-slate-500">
-                              <span className="flex items-center gap-1">
-                                <Calendar className="w-3.5 h-3.5 text-[#ff6a00]" />
-                                <span>{update.date}</span>
-                              </span>
-                              <span className="w-1.5 h-1.5 rounded-full bg-slate-700" />
-                              <span className="flex items-center gap-1">
-                                <Clock className="w-3.5 h-3.5 text-slate-500" />
-                                <span>{update.readTime}</span>
-                              </span>
-                              <span className="w-1.5 h-1.5 rounded-full bg-slate-700" />
-                              <span className="px-2 py-0.5 rounded bg-[#ff6a00]/10 border border-[#ff6a00]/20 text-[#ff6a00] font-bold uppercase tracking-wider">
-                                {update.category}
-                              </span>
+                          {/* Content Column */}
+                          <div className="lg:col-span-8 flex flex-col justify-between space-y-4">
+                            <div className="space-y-3">
+                              {/* Metadata */}
+                              <div className="flex flex-wrap items-center gap-3 text-[10px] font-mono text-slate-500">
+                                <span className="flex items-center gap-1">
+                                  <Calendar className="w-3.5 h-3.5 text-[#ff6a00]" />
+                                  <span>{update.date}</span>
+                                </span>
+                                <span className="w-1.5 h-1.5 rounded-full bg-slate-700" />
+                                <span className="flex items-center gap-1">
+                                  <Clock className="w-3.5 h-3.5 text-slate-500" />
+                                  <span>{update.readTime}</span>
+                                </span>
+                                <span className="w-1.5 h-1.5 rounded-full bg-slate-700" />
+                                <span className="px-2 py-0.5 rounded bg-[#ff6a00]/10 border border-[#ff6a00]/20 text-[#ff6a00] font-bold uppercase tracking-wider">
+                                  {update.category}
+                                </span>
+                              </div>
+
+                              {/* Title */}
+                              <h3 className="font-serif text-xl sm:text-2xl font-medium text-white hover:text-[#ff6a00] transition-colors leading-tight">
+                                {highlightText(update.title, searchQuery)}
+                              </h3>
+
+                              {/* Description */}
+                              <p className="text-xs sm:text-sm text-slate-400 font-light leading-relaxed">
+                                {highlightText(update.content, searchQuery)}
+                              </p>
                             </div>
 
-                            {/* Title */}
-                            <h3 className="font-serif text-xl sm:text-2xl font-medium text-white hover:text-[#ff6a00] transition-colors leading-tight">
-                              {highlightText(update.title, searchQuery)}
-                            </h3>
+                            {/* Author Footer */}
+                            <div className="flex items-center gap-2 pt-4 border-t border-white/[0.04] text-[10px] font-mono text-slate-500">
+                              <User className="w-3.5 h-3.5 text-[#ff6a00]" />
+                              <span>Published by <strong className="text-slate-300 font-medium">{update.author}</strong></span>
+                            </div>
 
-                            {/* Description */}
-                            <p className="text-xs sm:text-sm text-slate-400 font-light leading-relaxed">
-                              {highlightText(update.content, searchQuery)}
-                            </p>
                           </div>
-
-                          {/* Author Footer */}
-                          <div className="flex items-center gap-2 pt-4 border-t border-white/[0.04] text-[10px] font-mono text-slate-500">
-                            <User className="w-3.5 h-3.5 text-[#ff6a00]" />
-                            <span>Published by <strong className="text-slate-300 font-medium">{update.author}</strong></span>
-                          </div>
-
-                        </div>
-                      </div>
+                        </motion.div>
+                      </Magnetic>
                     </motion.div>
                   ))}
                 </AnimatePresence>
@@ -245,7 +275,7 @@ export default function CompanyUpdatesPage() {
               >
                 <AlertCircle className="w-8 h-8 text-slate-600" />
                 <p className="text-xs text-slate-500 font-light">
-                  No announcements found matching "{searchQuery}" in category "{activeCategory}".
+                  No announcements found matching &ldquo;{searchQuery}&rdquo; in category &ldquo;{activeCategory}&rdquo;.
                 </p>
               </motion.div>
             )}

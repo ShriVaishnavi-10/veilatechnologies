@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { Sparkles } from "lucide-react";
-import { motion } from "framer-motion";
+import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -11,6 +11,18 @@ const MotionLink = motion.create(Link);
 export default function Calculator() {
   const pathname = usePathname();
   const isHome = pathname === "/";
+
+  // Mouse spotlight tracking
+  const sectionX = useMotionValue(0);
+  const sectionY = useMotionValue(0);
+  const springSectionX = useSpring(sectionX, { stiffness: 85, damping: 24 });
+  const springSectionY = useSpring(sectionY, { stiffness: 85, damping: 24 });
+
+  const handleSectionMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    sectionX.set(e.clientX - rect.left);
+    sectionY.set(e.clientY - rect.top);
+  };
 
   const [pages, setPages] = useState<number>(5);
   const [seoMonths, setSeoMonths] = useState<number>(3);
@@ -33,14 +45,16 @@ export default function Calculator() {
     const seoCost = seoMonths * 7000; // ₹7,000/month SEO
     const socialCost = socialPosts * 400; // ₹400/post content/graphics
     
-    setWebTarget(webCost + ecomCost);
-    setMarketingTarget(seoCost + socialCost);
-    setTotalTarget(webCost + ecomCost + seoCost + socialCost);
+    setTimeout(() => {
+      setWebTarget(webCost + ecomCost);
+      setMarketingTarget(seoCost + socialCost);
+      setTotalTarget(webCost + ecomCost + seoCost + socialCost);
+    }, 0);
   }, [pages, seoMonths, isEcommerce, socialPosts]);
 
   // Smooth counter animation hook simulation for Web Portion
   useEffect(() => {
-    let start = displayWeb;
+    const start = displayWeb;
     const end = webTarget;
     if (start === end) return;
 
@@ -59,11 +73,12 @@ export default function Calculator() {
       }
     };
     requestAnimationFrame(animate);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [webTarget]);
 
   // Smooth counter animation hook simulation for Marketing Portion
   useEffect(() => {
-    let start = displayMarketing;
+    const start = displayMarketing;
     const end = marketingTarget;
     if (start === end) return;
 
@@ -82,11 +97,12 @@ export default function Calculator() {
       }
     };
     requestAnimationFrame(animate);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [marketingTarget]);
 
   // Smooth counter animation hook simulation for Total Target
   useEffect(() => {
-    let start = displayTotal;
+    const start = displayTotal;
     const end = totalTarget;
     if (start === end) return;
 
@@ -105,6 +121,7 @@ export default function Calculator() {
       }
     };
     requestAnimationFrame(animate);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [totalTarget]);
 
   const formatCurrency = (val: number) => {
@@ -115,15 +132,51 @@ export default function Calculator() {
     }).format(val);
   };
 
+  const containerVariants = {
+    hidden: { opacity: 0, x: -30 },
+    visible: {
+      opacity: 1,
+      x: 0,
+      transition: {
+        duration: 0.6,
+        ease: [0.16, 1, 0.3, 1],
+        staggerChildren: 0.1,
+        delayChildren: 0.05
+      }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 15 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: { duration: 0.5, ease: "easeOut" }
+    }
+  };
+
   return (
-    <section id="calculator" className="relative py-16 sm:py-28 bg-[#111113] border-t border-white/[0.03] overflow-hidden">
+    <section 
+      onMouseMove={handleSectionMouseMove}
+      id="calculator" 
+      className="relative py-16 sm:py-28 bg-[#111113] border-t border-white/[0.03] overflow-hidden"
+    >
+      {/* Moving cursor spotlight halo background light */}
+      <motion.div
+        style={{
+          x: useTransform(springSectionX, (val) => val - 350),
+          y: useTransform(springSectionY, (val) => val - 350),
+        }}
+        className="absolute top-0 left-0 w-[700px] h-[700px] bg-[#ff6a00]/[0.03] rounded-full blur-[120px] pointer-events-none z-0"
+      />
+
       <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-8">
         
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 15 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-100px" }}
+          viewport={{ once: false, amount: 0.15 }}
           transition={{ duration: 0.6 }}
           className="max-w-3xl mb-20"
         >
@@ -143,15 +196,15 @@ export default function Calculator() {
           
           {/* Sliders Pane */}
           <motion.div
-            initial={{ opacity: 0, x: -25 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true, margin: "-100px" }}
-            transition={{ duration: 0.6 }}
+            variants={containerVariants}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: false, amount: 0.15 }}
             className="lg:col-span-7 p-5 sm:p-8 rounded-xl border border-white/[0.04] bg-[#16161a] flex flex-col justify-between shadow-sm space-y-8"
           >
             <div className="space-y-8">
               {/* Web pages Slider */}
-              <div className="space-y-4">
+              <motion.div variants={itemVariants} className="space-y-4">
                 <div className="flex justify-between items-center text-xs">
                   <span className="text-white font-semibold uppercase tracking-wider">
                     Website Development Pages
@@ -179,10 +232,10 @@ export default function Calculator() {
                   <span>10 Pages</span>
                   <span>20 Pages</span>
                 </div>
-              </div>
+              </motion.div>
 
               {/* SEO Months Slider */}
-              <div className="space-y-4">
+              <motion.div variants={itemVariants} className="space-y-4">
                 <div className="flex justify-between items-center text-xs">
                   <span className="text-white font-semibold uppercase tracking-wider">
                     Search Engine Optimization
@@ -210,10 +263,10 @@ export default function Calculator() {
                   <span>6 Months</span>
                   <span>12 Months</span>
                 </div>
-              </div>
+              </motion.div>
 
               {/* Social posts Slider */}
-              <div className="space-y-4">
+              <motion.div variants={itemVariants} className="space-y-4">
                 <div className="flex justify-between items-center text-xs">
                   <span className="text-white font-semibold uppercase tracking-wider">
                     Social Posts & Handling
@@ -241,10 +294,11 @@ export default function Calculator() {
                   <span>15 posts</span>
                   <span>30 posts</span>
                 </div>
-              </div>
+              </motion.div>
 
               {/* E-Commerce checkbox toggle */}
               <motion.div
+                variants={itemVariants}
                 whileHover={{ scale: 1.01, borderColor: "rgba(255,106,0,0.2)" }}
                 className="flex items-center gap-3 p-4 rounded-lg bg-[#0B0B0C]/40 border border-white/[0.04] transition-all duration-200 cursor-pointer"
               >
@@ -273,9 +327,10 @@ export default function Calculator() {
           <motion.div
             initial={{ opacity: 0, x: 25 }}
             whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true, margin: "-100px" }}
-            transition={{ duration: 0.6 }}
-            className="lg:col-span-5 p-5 sm:p-8 rounded-xl border border-[#ff6a00]/[0.1] bg-gradient-to-br from-[#ff8a00] to-[#ff2b00] flex flex-col justify-between shadow-md text-white"
+            viewport={{ once: false, amount: 0.15 }}
+            transition={{ duration: 0.6, delay: 0.15 }}
+            whileHover={{ scale: 1.02, boxShadow: "0 20px 40px -15px rgba(255, 106, 0, 0.35)" }}
+            className="lg:col-span-5 p-5 sm:p-8 rounded-xl border border-[#ff6a00]/[0.1] bg-gradient-to-br from-[#ff8a00] to-[#ff2b00] flex flex-col justify-between shadow-md text-white transition-shadow duration-300"
           >
             <div className="space-y-6">
               <div>
@@ -291,6 +346,26 @@ export default function Calculator() {
                 >
                   {formatCurrency(displayTotal)}
                 </motion.div>
+              </div>
+
+              {/* Dynamic Segmented Budget Bar */}
+              <div className="space-y-2">
+                <div className="h-2 w-full rounded-full bg-white/10 flex overflow-hidden relative">
+                  <motion.div 
+                    animate={{ width: `${displayTotal > 0 ? (displayWeb / displayTotal) * 100 : 50}%` }}
+                    transition={{ type: "spring", stiffness: 80, damping: 20 }}
+                    className="h-full bg-white shadow-[0_0_8px_rgba(255,255,255,0.4)]"
+                  />
+                  <motion.div 
+                    animate={{ width: `${displayTotal > 0 ? (displayMarketing / displayTotal) * 100 : 50}%` }}
+                    transition={{ type: "spring", stiffness: 80, damping: 20 }}
+                    className="h-full bg-black/25"
+                  />
+                </div>
+                <div className="flex justify-between text-[9px] font-mono text-orange-100 font-semibold">
+                  <span>Web: {displayTotal > 0 ? Math.round((displayWeb / displayTotal) * 100) : 50}%</span>
+                  <span>Marketing: {displayTotal > 0 ? Math.round((displayMarketing / displayTotal) * 100) : 50}%</span>
+                </div>
               </div>
 
               <div className="grid grid-cols-2 gap-4 py-4 border-y border-white/[0.15]">

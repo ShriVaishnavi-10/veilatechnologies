@@ -1,8 +1,9 @@
 "use client";
 
-import React from "react";
+import React, { useRef } from "react";
 import { Compass, PenTool, Code, ShieldCheck, Rocket } from "lucide-react";
-import { motion } from "framer-motion";
+import { motion, useScroll, useSpring } from "framer-motion";
+import Magnetic from "@/components/Magnetic";
 
 interface ProcessStep {
   number: string;
@@ -12,6 +13,16 @@ interface ProcessStep {
 }
 
 export default function Process() {
+  const sectionRef = useRef<HTMLDivElement>(null);
+  
+  // Track scroll position of the section to draw the timeline path
+  const { scrollYProgress } = useScroll({
+    target: sectionRef,
+    offset: ["start 80%", "start 35%"]
+  });
+
+  const scaleX = useSpring(scrollYProgress, { stiffness: 100, damping: 30 });
+
   const steps: ProcessStep[] = [
     {
       number: "01",
@@ -49,29 +60,49 @@ export default function Process() {
     hidden: {},
     visible: {
       transition: {
-        staggerChildren: 0.1
+        staggerChildren: 0.15
       }
     }
   };
 
   const cardVariants = {
-    hidden: { opacity: 0, y: 20 },
+    hidden: { opacity: 0, y: 30, scale: 0.95 },
     visible: {
       opacity: 1,
       y: 0,
-      transition: { duration: 0.5, ease: "easeOut" as const }
+      scale: 1,
+      transition: { duration: 0.6, ease: [0.16, 1, 0.3, 1] }
+    }
+  };
+
+  const iconVariants = {
+    hidden: { scale: 0.7, y: 10, opacity: 0 },
+    visible: { 
+      scale: 1, 
+      y: 0,
+      opacity: 1,
+      transition: { 
+        type: "spring", 
+        stiffness: 220, 
+        damping: 14,
+        delay: 0.15
+      } 
     }
   };
 
   return (
-    <section id="process" className="relative py-16 sm:py-28 bg-[#0B0B0C] border-t border-white/[0.03] overflow-hidden">
+    <section 
+      ref={sectionRef} 
+      id="process" 
+      className="relative py-16 sm:py-28 bg-[#0B0B0C] border-t border-white/[0.03] overflow-hidden"
+    >
       <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-8">
         
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 15 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-100px" }}
+          viewport={{ once: false, amount: 0.15 }}
           transition={{ duration: 0.6 }}
           className="max-w-3xl mb-20 text-left"
         >
@@ -86,42 +117,55 @@ export default function Process() {
           </p>
         </motion.div>
 
-        {/* Steps Grid */}
-        <motion.div
-          variants={gridVariants}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: "-100px" }}
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 sm:gap-8 items-stretch"
-        >
-          {steps.map((step, idx) => (
-            <motion.div
-              key={idx}
-              variants={cardVariants}
-              whileHover={{ y: -4 }}
-              className="flex flex-col justify-between p-6 rounded-xl border border-white/[0.04] bg-[#16161a]/60 backdrop-blur-sm transition-all duration-300 hover:border-[#ff6a00]/30 hover:bg-[#16161a]/95 cursor-pointer relative group"
-            >
-              <div className="space-y-4">
-                {/* Number and Icon Badge */}
-                <div className="flex items-center justify-between pb-3 border-b border-white/[0.04]">
-                  <span className="text-xl font-serif font-semibold italic text-[#ff6a00]/60 group-hover:text-[#ff6a00] transition-colors">
-                    {step.number}
-                  </span>
-                  <div className="p-2 rounded-lg bg-[#ff6a00]/[0.04] border border-[#ff6a00]/[0.15]">
-                    {step.icon}
-                  </div>
-                </div>
+        {/* Steps Grid with Timeline connector */}
+        <div className="relative">
+          {/* Timeline Connector Line - Animated on Scroll */}
+          <motion.div
+            style={{ scaleX, originX: 0 }}
+            className="hidden lg:block absolute top-[42px] left-12 right-12 h-[1.5px] bg-gradient-to-r from-[#ff8a00] to-[#ff2b00] z-0 shadow-[0_0_8px_rgba(255,106,0,0.4)]"
+          />
 
-                <h3 className="text-sm font-bold uppercase tracking-wider text-white font-sans">
-                  {step.title}
-                </h3>
-                <p className="text-xs text-slate-400 font-light leading-relaxed">
-                  {step.description}
-                </p>
-              </div>
-            </motion.div>
-          ))}
-        </motion.div>
+          <motion.div
+            variants={gridVariants}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: false, amount: 0.15 }}
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 sm:gap-8 items-stretch relative z-10"
+          >
+            {steps.map((step, idx) => (
+              <motion.div
+                key={idx}
+                variants={cardVariants}
+                whileHover={{ y: -6, borderColor: "rgba(255, 106, 0, 0.3)" }}
+                className="flex flex-col justify-between p-6 rounded-xl border border-white/[0.04] bg-[#16161a]/60 backdrop-blur-sm transition-all duration-300 hover:bg-[#16161a]/95 cursor-pointer relative group"
+              >
+                <div className="space-y-4">
+                  {/* Number and Icon Badge */}
+                  <div className="flex items-center justify-between pb-3 border-b border-white/[0.04]">
+                    <span className="text-xl font-serif font-semibold italic text-[#ff6a00]/60 group-hover:text-[#ff6a00] transition-colors duration-300">
+                      {step.number}
+                    </span>
+                    <Magnetic range={50} strength={0.4}>
+                      <motion.div 
+                        variants={iconVariants}
+                        className="p-2 rounded-lg bg-[#ff6a00]/[0.04] border border-[#ff6a00]/[0.15] transition-colors group-hover:border-[#ff6a00]/40 group-hover:bg-[#ff6a00]/5 cursor-pointer"
+                      >
+                        {step.icon}
+                      </motion.div>
+                    </Magnetic>
+                  </div>
+
+                  <h3 className="text-sm font-bold uppercase tracking-wider text-white font-sans transition-colors group-hover:text-[#ff6a00] duration-300">
+                    {step.title}
+                  </h3>
+                  <p className="text-xs text-slate-400 font-light leading-relaxed">
+                    {step.description}
+                  </p>
+                </div>
+              </motion.div>
+            ))}
+          </motion.div>
+        </div>
 
       </div>
     </section>

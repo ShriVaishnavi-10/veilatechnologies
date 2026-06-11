@@ -2,11 +2,31 @@
 
 import React, { useState } from "react";
 import { Menu, X, ChevronDown, Globe, TrendingUp, Target, Smartphone, PenTool } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useScroll, useSpring, type Variants } from "framer-motion";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import Magnetic from "@/components/Magnetic";
 
 const MotionLink = motion.create(Link);
+
+const navContainerVariants: Variants = {
+  hidden: {},
+  visible: {
+    transition: {
+      staggerChildren: 0.06,
+      delayChildren: 0.05,
+    },
+  },
+};
+
+const navItemVariants: Variants = {
+  hidden: { opacity: 0, y: -10 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.5, ease: [0.16, 1, 0.3, 1] },
+  },
+};
 
 export default function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -16,6 +36,13 @@ export default function Navbar() {
   
   const pathname = usePathname();
   const isHome = pathname === "/";
+
+  const { scrollYProgress } = useScroll();
+  const scaleX = useSpring(scrollYProgress, {
+    stiffness: 100,
+    damping: 30,
+    restDelta: 0.001
+  });
 
   const navLinks = [
     { name: "Home", href: "#" },
@@ -75,14 +102,25 @@ export default function Navbar() {
       <header
         className="fixed top-0 left-0 right-0 z-50 bg-gradient-to-r from-[#ff8a00] to-[#ff2b00] py-2.5 border-b border-white/[0.08] shadow-md"
       >
+        {/* Scroll Progress Bar */}
+        <motion.div
+          className="absolute bottom-0 left-0 right-0 h-[2.5px] bg-gradient-to-r from-yellow-300 via-white to-yellow-300 origin-[0%] z-50 shadow-[0_0_8px_rgba(253,224,71,0.8)]"
+          style={{ scaleX }}
+        />
         <div className="max-w-7xl mx-auto px-6 lg:px-8 flex items-center justify-between">
           {/* Desktop Nav Links (Left) */}
-          <nav className="hidden md:flex items-center gap-8">
+          <motion.nav
+            variants={navContainerVariants}
+            initial="hidden"
+            animate="visible"
+            className="hidden md:flex items-center gap-8"
+          >
             {navLinks.map((link) => {
               if (link.name === "Services") {
                 return (
-                  <div
+                  <motion.div
                     key={link.name}
+                    variants={navItemVariants}
                     className="relative py-2"
                     onMouseEnter={() => setIsDropdownOpen(true)}
                     onMouseLeave={() => setIsDropdownOpen(false)}
@@ -131,78 +169,81 @@ export default function Navbar() {
                         </motion.div>
                       )}
                     </AnimatePresence>
-                  </div>
+                  </motion.div>
                 );
               }
 
               return (
-                <MotionLink
-                  key={link.name}
-                  href={getHref(link.href)}
-                  whileHover={{ scale: 1.05, y: -1 }}
-                  whileTap={{ scale: 0.95 }}
-                  className="text-xs font-semibold tracking-wider uppercase text-white/90 hover:text-white transition-colors duration-200 hover:underline decoration-white decoration-2 underline-offset-4"
-                >
-                  {link.name}
-                </MotionLink>
+                <motion.div key={link.name} variants={navItemVariants}>
+                  <MotionLink
+                    href={getHref(link.href)}
+                    whileHover={{ scale: 1.05, y: -1 }}
+                    whileTap={{ scale: 0.95 }}
+                    className="text-xs font-semibold tracking-wider uppercase text-white/90 hover:text-white transition-colors duration-200 hover:underline decoration-white decoration-2 underline-offset-4"
+                  >
+                    {link.name}
+                  </MotionLink>
+                </motion.div>
               );
             })}
-          </nav>
+          </motion.nav>
 
           {/* Logo Badge (Right) */}
-          <MotionLink
-            href="/"
-            whileHover="hover"
-            whileTap={{ scale: 0.98 }}
-            className="flex items-center gap-2 bg-white border border-white/10 rounded-lg px-3.5 py-1.5 shadow-sm transition-shadow hover:shadow-md cursor-pointer"
-          >
-            <motion.div
-              variants={{
-                hover: { scale: 1.1 },
-              }}
-              transition={{ duration: 0.3, ease: "easeInOut" }}
-              className="flex items-center justify-center"
+          <Magnetic range={50} strength={0.3}>
+            <MotionLink
+              href="/"
+              whileHover="hover"
+              whileTap={{ scale: 0.98 }}
+              className="flex items-center gap-2 bg-white border border-white/10 rounded-lg px-3.5 py-1.5 shadow-sm transition-shadow hover:shadow-md cursor-pointer"
             >
-              <img
-                src="/logo.png"
-                alt="Veila Technologies Logo"
-                style={{ display: "none" }}
-                onLoad={(e) => {
-                  e.currentTarget.style.display = "block";
-                  const svgEl = e.currentTarget.nextElementSibling as HTMLElement;
-                  if (svgEl) svgEl.style.display = "none";
+              <motion.div
+                variants={{
+                  hover: { scale: 1.1 },
                 }}
-                className="w-7 h-7 object-contain"
-              />
-              <svg viewBox="0 0 100 100" fill="none" className="w-7 h-7 overflow-visible">
-                <defs>
-                  <linearGradient id="navOrangeRed" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stopColor="#FF8A00" />
-                    <stop offset="100%" stopColor="#FF1F00" />
-                  </linearGradient>
-                </defs>
-                {/* Outer Play Button Loop (Path 1) */}
-                <path
-                  d="M 42 80 C 34 80, 30 76, 30 68 L 30 32 C 30 24, 34 20, 42 20 L 76 38 C 82 41, 82 59, 76 62 L 52 72"
-                  stroke="url(#navOrangeRed)"
-                  strokeWidth="10"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
+                transition={{ duration: 0.3, ease: "easeInOut" }}
+                className="flex items-center justify-center"
+              >
+                <img
+                  src="/logo.png"
+                  alt="Veila Technologies Logo"
+                  style={{ display: "none" }}
+                  onLoad={(e) => {
+                    e.currentTarget.style.display = "block";
+                    const svgEl = e.currentTarget.nextElementSibling as HTMLElement;
+                    if (svgEl) svgEl.style.display = "none";
+                  }}
+                  className="w-7 h-7 object-contain"
                 />
-                {/* Floating V (Path 2) */}
-                <path
-                  d="M 41 42 L 48 59 L 55 42"
-                  stroke="url(#navOrangeRed)"
-                  strokeWidth="9.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            </motion.div>
-            <span className="font-sans font-bold text-xs tracking-wide text-[#0B0B0C]">
-              Veila <span className="text-[#ff6a00] font-light">Technologies</span>
-            </span>
-          </MotionLink>
+                <svg viewBox="0 0 100 100" fill="none" className="w-7 h-7 overflow-visible">
+                  <defs>
+                    <linearGradient id="navOrangeRed" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stopColor="#FF8A00" />
+                      <stop offset="100%" stopColor="#FF1F00" />
+                    </linearGradient>
+                  </defs>
+                  {/* Outer Play Button Loop (Path 1) */}
+                  <path
+                    d="M 42 80 C 34 80, 30 76, 30 68 L 30 32 C 30 24, 34 20, 42 20 L 76 38 C 82 41, 82 59, 76 62 L 52 72"
+                    stroke="url(#navOrangeRed)"
+                    strokeWidth="10"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                  {/* Floating V (Path 2) */}
+                  <path
+                    d="M 41 42 L 48 59 L 55 42"
+                    stroke="url(#navOrangeRed)"
+                    strokeWidth="9.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </motion.div>
+              <span className="font-sans font-bold text-xs tracking-wide text-[#0B0B0C]">
+                Veila <span className="text-[#ff6a00] font-light">Technologies</span>
+              </span>
+            </MotionLink>
+          </Magnetic>
 
           {/* Mobile Menu Toggle */}
           <motion.button

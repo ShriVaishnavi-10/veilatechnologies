@@ -18,13 +18,16 @@ export default function Preloader() {
   useEffect(() => {
     if (!loading) return;
 
-    setMounted(true);
+    const mountTimer = setTimeout(() => {
+      setMounted(true);
+    }, 0);
     // Lock scrolling on mount
     document.body.style.overflow = "hidden";
 
     // Mark as loaded immediately to prevent repeat preloads if user navigates during curtain animation
     if (typeof window !== "undefined") {
-      (window as any).veila_preloader_loaded = true;
+      interface CustomWindow extends Window { veila_preloader_loaded?: boolean; }
+      ((window as unknown) as CustomWindow).veila_preloader_loaded = true;
       sessionStorage.setItem("veila_preloader_played", "true");
     }
 
@@ -74,6 +77,7 @@ export default function Preloader() {
 
     return () => {
       cancelAnimationFrame(frameId);
+      clearTimeout(mountTimer);
       clearTimeout(t1);
       clearTimeout(t2);
       clearTimeout(t3);
@@ -177,7 +181,7 @@ export default function Preloader() {
 
         {/* Title Reveal (Clean, Stagger-delayed spans via inline style transitions) */}
         <div className="text-center space-y-3">
-          <div className="flex items-center justify-center gap-[0.2em] font-sans font-bold text-2xl sm:text-3xl tracking-[0.2em] uppercase select-none">
+          <div className="flex items-center justify-center gap-[0.2em] font-serif font-bold text-2xl sm:text-3xl tracking-[0.2em] uppercase select-none">
             <span
               className="text-white font-extrabold"
               style={{

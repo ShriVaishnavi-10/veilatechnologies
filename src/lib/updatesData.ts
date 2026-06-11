@@ -83,17 +83,17 @@ export function formatDBDate(dateStr: string): string {
   return dateStr;
 }
 
-export function mapDBUpdateToCompanyUpdate(dbRow: any): CompanyUpdate {
+export function mapDBUpdateToCompanyUpdate(dbRow: Record<string, unknown>): CompanyUpdate {
   return {
-    id: dbRow.id,
-    slug: dbRow.slug || dbRow.id,
-    title: dbRow.title,
-    content: dbRow.content,
-    category: dbRow.category as "Product" | "Milestone" | "Company",
-    date: dbRow.publish_date ? formatDBDate(dbRow.publish_date) : (dbRow.date || "Recent"),
-    author: dbRow.author,
-    readTime: dbRow.read_time || dbRow.readTime || "2 min read",
-    imageUrl: dbRow.image_url || dbRow.imageUrl || "/resource_growth_blog.png"
+    id: String(dbRow.id || ""),
+    slug: String(dbRow.slug || dbRow.id || ""),
+    title: String(dbRow.title || ""),
+    content: String(dbRow.content || ""),
+    category: (dbRow.category as "Product" | "Milestone" | "Company") || "Company",
+    date: dbRow.publish_date ? formatDBDate(String(dbRow.publish_date)) : String(dbRow.date || "Recent"),
+    author: String(dbRow.author || ""),
+    readTime: String(dbRow.read_time || dbRow.readTime || "2 min read"),
+    imageUrl: String(dbRow.image_url || dbRow.imageUrl || "/resource_growth_blog.png")
   };
 }
 

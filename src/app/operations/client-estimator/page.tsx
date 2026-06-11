@@ -15,6 +15,29 @@ const estimatorDetails = [
   "Zero Obligation Assessment"
 ];
 
+const listContainerVariants = {
+  hidden: {},
+  visible: {
+    transition: {
+      staggerChildren: 0.08,
+    },
+  },
+};
+
+const listItemVariants = {
+  hidden: { opacity: 0, x: -25, scaleX: 0.05 },
+  visible: {
+    opacity: 1,
+    x: 0,
+    scaleX: 1,
+    transition: {
+      type: "spring",
+      stiffness: 70,
+      damping: 15,
+    },
+  },
+};
+
 export default function ClientEstimatorPage() {
   return (
     <div className="flex flex-col min-h-screen bg-[#0B0B0C] text-slate-100 overflow-hidden">
@@ -54,14 +77,25 @@ export default function ClientEstimatorPage() {
                   <CalcIcon className="w-4 h-4 text-[#ff6a00]" />
                   <span>Key Pillars</span>
                 </h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                <motion.div
+                  variants={listContainerVariants}
+                  initial="hidden"
+                  whileInView="visible"
+                  viewport={{ once: false, amount: 0.15 }}
+                  className="grid grid-cols-1 sm:grid-cols-2 gap-3.5"
+                >
                   {estimatorDetails.map((detail, idx) => (
-                    <div key={idx} className="flex items-start gap-2.5 text-xs text-slate-300 font-light">
+                    <motion.div
+                      key={idx}
+                      variants={listItemVariants}
+                      style={{ originX: 0 }}
+                      className="flex items-start gap-2.5 text-xs text-slate-300 font-light"
+                    >
                       <CheckCircle2 className="w-4 h-4 text-[#ff6a00] mt-0.5 shrink-0" />
                       <span>{detail}</span>
-                    </div>
+                    </motion.div>
                   ))}
-                </div>
+                </motion.div>
               </div>
             </motion.div>
 
@@ -90,8 +124,9 @@ export default function ClientEstimatorPage() {
           {/* Calculator Container */}
           <motion.div
             initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: false, amount: 0.15 }}
+            transition={{ duration: 0.6, delay: 0.1 }}
             className="border-t border-white/[0.04] pt-16 sm:pt-24"
           >
             <div className="max-w-3xl mb-12 sm:mb-16">

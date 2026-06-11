@@ -30,6 +30,19 @@ interface JobApplication {
   created_at: string;
 }
 
+interface BlogPost {
+  id?: string;
+  slug: string;
+  title: string;
+  content: string;
+  category: string;
+  publish_date: string;
+  author: string;
+  read_time: string;
+  image_url: string;
+  created_at?: string;
+}
+
 export default function AdminDashboardClient() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [email, setEmail] = useState("");
@@ -47,9 +60,9 @@ export default function AdminDashboardClient() {
   const [filter, setFilter] = useState("All");
 
   // Blogs State
-  const [blogPosts, setBlogPosts] = useState<any[]>([]);
+  const [blogPosts, setBlogPosts] = useState<BlogPost[]>([]);
   const [blogLoading, setBlogLoading] = useState(false);
-  const [editingPost, setEditingPost] = useState<any | null>(null);
+  const [editingPost, setEditingPost] = useState<BlogPost | null>(null);
 
   // Job Applications State
   const [applications, setApplications] = useState<JobApplication[]>([]);
@@ -61,65 +74,7 @@ export default function AdminDashboardClient() {
     setExpandedApps(prev => ({ ...prev, [id]: !prev[id] }));
   };
 
-  // Check login state on mount
-  useEffect(() => {
-    let authListener: any = null;
-
-    if (isSupabaseConfigured && supabase) {
-      // Get current session
-      supabase.auth.getSession().then(({ data: { session } }) => {
-        if (session) {
-          setIsLoggedIn(true);
-          sessionStorage.setItem("veila_admin_logged", "true");
-        } else {
-          setIsLoggedIn(false);
-          sessionStorage.removeItem("veila_admin_logged");
-        }
-        setAuthChecking(false);
-      });
-
-      // Listen to auth changes
-      const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-        if (event === "SIGNED_IN" && session) {
-          setIsLoggedIn(true);
-          sessionStorage.setItem("veila_admin_logged", "true");
-        } else if (event === "SIGNED_OUT") {
-          setIsLoggedIn(false);
-          sessionStorage.removeItem("veila_admin_logged");
-        }
-      });
-      authListener = subscription;
-    } else {
-      // Fallback local session checking
-      if (typeof window !== "undefined") {
-        const logged = sessionStorage.getItem("veila_admin_logged");
-        if (logged === "true") {
-          setIsLoggedIn(true);
-        }
-      }
-      setAuthChecking(false);
-    }
-
-    return () => {
-      if (authListener) {
-        authListener.unsubscribe();
-      }
-    };
-  }, []);
-
-  // Fetch data depending on active tab
-  useEffect(() => {
-    if (isLoggedIn) {
-      if (activeTab === "inquiries") {
-        fetchInquiries();
-      } else if (activeTab === "blogs") {
-        fetchBlogPosts();
-      } else if (activeTab === "applications") {
-        fetchApplications();
-      }
-    }
-  }, [isLoggedIn, activeTab]);
-
+  // Helper & Fetch Handlers (Declared before useEffect references to avoid hoisting warnings)
   const fetchApplications = async () => {
     setAppLoading(true);
     try {
@@ -136,14 +91,14 @@ export default function AdminDashboardClient() {
           setApplications(localData ? JSON.parse(localData) : []);
         }
       }
-    } catch (err) {
+    } catch {
       // Error fetching applications
     } finally {
       setAppLoading(false);
     }
   };
 
-  const updateApplicationStatus = async (applicationId: string, newStatus: string) => {
+  const updateApplicationStatus = async (applicationId: string, newStatus: JobApplication["status"]) => {
     try {
       if (isSupabaseConfigured && supabase) {
         const { error } = await supabase
@@ -158,7 +113,7 @@ export default function AdminDashboardClient() {
             const list: JobApplication[] = JSON.parse(localData);
             const updated = list.map(item => 
               (String(item.id) === String(applicationId) || String(item.created_at) === String(applicationId))
-                ? { ...item, status: newStatus as any }
+                ? { ...item, status: newStatus }
                 : item
             );
             localStorage.setItem("veila_job_applications", JSON.stringify(updated));
@@ -167,10 +122,10 @@ export default function AdminDashboardClient() {
       }
       setApplications(prev => prev.map(item => 
         (String(item.id) === String(applicationId) || String(item.created_at) === String(applicationId))
-          ? { ...item, status: newStatus as any }
+          ? { ...item, status: newStatus }
           : item
       ));
-    } catch (err) {
+    } catch {
       // Error updating status
     }
   };
@@ -199,7 +154,7 @@ export default function AdminDashboardClient() {
       setApplications(prev => prev.filter(item => 
         String(item.id) !== String(applicationId) && String(item.created_at) !== String(applicationId)
       ));
-    } catch (err) {
+    } catch {
       // Error deleting application
     }
   };
@@ -221,7 +176,7 @@ export default function AdminDashboardClient() {
           setInquiries(localData ? JSON.parse(localData) : []);
         }
       }
-    } catch (err) {
+    } catch {
       // Error fetching inquiries details
     } finally {
       setLoading(false);
@@ -259,8 +214,9 @@ export default function AdminDashboardClient() {
           setLoginError("Invalid administrator credentials. Access Denied.");
         }
       }
-    } catch (err: any) {
-      setLoginError(err.message || "An authentication error occurred.");
+    } catch (err) {
+      const error = err as Error;
+      setLoginError(error.message || "An authentication error occurred.");
     } finally {
       setLoginLoading(false);
     }
@@ -271,7 +227,7 @@ export default function AdminDashboardClient() {
       if (isSupabaseConfigured && supabase) {
         await supabase.auth.signOut();
       }
-    } catch (err) {
+    } catch {
       // Ignore signOut errors
     } finally {
       sessionStorage.removeItem("veila_admin_logged");
@@ -319,7 +275,7 @@ export default function AdminDashboardClient() {
         const isMatch = String(item.id) === String(inquiryId) || String(item.created_at) === String(inquiryId);
         return isMatch ? { ...item, status: newStatus } : item;
       }));
-    } catch (err) {
+    } catch {
       // Error updating status
     }
   };
@@ -358,7 +314,7 @@ export default function AdminDashboardClient() {
       }
 
       setInquiries(prev => prev.filter(item => String(item.id) !== String(inquiryId) && String(item.created_at) !== String(inquiryId)));
-    } catch (err) {
+    } catch {
       // Error deleting inquiry
     }
   };
@@ -378,10 +334,11 @@ export default function AdminDashboardClient() {
       } else {
         if (typeof window !== "undefined") {
           const localData = localStorage.getItem("veila_company_updates");
-          setBlogPosts(localData ? JSON.parse(localData) : []);
+          const parsed: BlogPost[] = localData ? JSON.parse(localData) : [];
+          setBlogPosts(parsed);
         }
       }
-    } catch (err) {
+    } catch {
       // Error fetching blog posts
     } finally {
       setBlogLoading(false);
@@ -443,10 +400,10 @@ export default function AdminDashboardClient() {
         // Local storage fallback for offline demo
         if (typeof window !== "undefined") {
           const localData = localStorage.getItem("veila_company_updates");
-          const parsed = localData ? JSON.parse(localData) : [];
-          let updatedList = [];
+          const parsed: BlogPost[] = localData ? JSON.parse(localData) : [];
+          let updatedList: BlogPost[] = [];
           if (isNew) {
-            const newRecord = {
+            const newRecord: BlogPost = {
               ...payload,
               id: `local-${Date.now()}`,
               created_at: new Date().toISOString()
@@ -454,7 +411,7 @@ export default function AdminDashboardClient() {
             updatedList = [newRecord, ...parsed];
             setBlogPosts(prev => [newRecord, ...prev]);
           } else {
-            updatedList = parsed.map((item: any) => 
+            updatedList = parsed.map((item) => 
               item.id === editingPost.id ? { ...item, ...payload } : item
             );
             setBlogPosts(prev => prev.map(item => item.id === editingPost.id ? { ...item, ...payload } : item));
@@ -464,7 +421,7 @@ export default function AdminDashboardClient() {
       }
 
       setEditingPost(null);
-    } catch (err) {
+    } catch {
       alert("Error saving blog post");
     }
   };
@@ -489,14 +446,14 @@ export default function AdminDashboardClient() {
       if (typeof window !== "undefined") {
         const localData = localStorage.getItem("veila_company_updates");
         if (localData) {
-          const parsed = JSON.parse(localData);
-          const updated = parsed.filter((item: any) => String(item.id) !== String(postId));
+          const parsed: BlogPost[] = JSON.parse(localData);
+          const updated = parsed.filter((item) => String(item.id) !== String(postId));
           localStorage.setItem("veila_company_updates", JSON.stringify(updated));
         }
       }
 
       setBlogPosts(prev => prev.filter(item => String(item.id) !== String(postId)));
-    } catch (err) {
+    } catch {
       alert("Error deleting blog post");
     }
   };
@@ -568,12 +525,81 @@ export default function AdminDashboardClient() {
           fetchBlogPosts();
         }
       }
-    } catch (e) {
+    } catch {
       alert("Error seeding posts");
     } finally {
       setBlogLoading(false);
     }
   };
+
+  // Check login state on mount
+  useEffect(() => {
+    let authListener: { unsubscribe: () => void } | null = null;
+
+    if (isSupabaseConfigured && supabase) {
+      // Get current session
+      supabase.auth.getSession().then(({ data: { session } }) => {
+        if (session) {
+          setTimeout(() => {
+            setIsLoggedIn(true);
+            sessionStorage.setItem("veila_admin_logged", "true");
+          }, 0);
+        } else {
+          setTimeout(() => {
+            setIsLoggedIn(false);
+            sessionStorage.removeItem("veila_admin_logged");
+          }, 0);
+        }
+        setTimeout(() => setAuthChecking(false), 0);
+      });
+
+      // Listen to auth changes
+      const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+        if (event === "SIGNED_IN" && session) {
+          setTimeout(() => {
+            setIsLoggedIn(true);
+            sessionStorage.setItem("veila_admin_logged", "true");
+          }, 0);
+        } else if (event === "SIGNED_OUT") {
+          setTimeout(() => {
+            setIsLoggedIn(false);
+            sessionStorage.removeItem("veila_admin_logged");
+          }, 0);
+        }
+      });
+      authListener = subscription;
+    } else {
+      // Fallback local session checking
+      setTimeout(() => {
+        if (typeof window !== "undefined") {
+          const logged = sessionStorage.getItem("veila_admin_logged");
+          if (logged === "true") {
+            setIsLoggedIn(true);
+          }
+        }
+        setAuthChecking(false);
+      }, 0);
+    }
+
+    return () => {
+      if (authListener) {
+        authListener.unsubscribe();
+      }
+    };
+  }, []);
+
+  // Fetch data depending on active tab
+  useEffect(() => {
+    if (isLoggedIn) {
+      if (activeTab === "inquiries") {
+        setTimeout(() => fetchInquiries(), 0);
+      } else if (activeTab === "blogs") {
+        setTimeout(() => fetchBlogPosts(), 0);
+      } else if (activeTab === "applications") {
+        setTimeout(() => fetchApplications(), 0);
+      }
+    }
+  }, [isLoggedIn, activeTab]);
 
   // Filtering
   const filteredInquiries = filter === "All"
@@ -904,14 +930,14 @@ export default function AdminDashboardClient() {
                               <div className="flex items-center justify-between pt-2">
                                 <div className="flex items-center gap-2">
                                   <button
-                                    onClick={() => handleUpdateStatus(item.id || (item as any).created_at || "", "Contacted")}
+                                    onClick={() => handleUpdateStatus(item.id || item.created_at || "", "Contacted")}
                                     className="inline-flex items-center gap-1.5 px-3 py-1.5 border border-green-500/20 hover:bg-green-500/[0.05] text-[9px] uppercase tracking-wider text-green-500 rounded transition-all font-semibold font-mono bg-[#16161a] cursor-pointer"
                                   >
                                     <CheckCircle className="w-3.5 h-3.5" />
                                     Mark Contacted
                                   </button>
                                   <button
-                                    onClick={() => handleUpdateStatus(item.id || (item as any).created_at || "", "Reviewed")}
+                                    onClick={() => handleUpdateStatus(item.id || item.created_at || "", "Reviewed")}
                                     className="inline-flex items-center gap-1.5 px-3 py-1.5 border border-white/5 hover:bg-white/[0.03] text-[9px] uppercase tracking-wider text-slate-400 hover:text-white rounded transition-all font-semibold font-mono bg-[#16161a] cursor-pointer"
                                   >
                                     <Eye className="w-3 h-3" />
@@ -920,7 +946,7 @@ export default function AdminDashboardClient() {
                                 </div>
                                 
                                 <button
-                                  onClick={() => handleDeleteInquiry(item.id || (item as any).created_at || "")}
+                                  onClick={() => handleDeleteInquiry(item.id || item.created_at || "")}
                                   className="inline-flex items-center gap-1 px-2.5 py-1.5 border border-rose-500/20 hover:bg-rose-500/[0.05] text-[9px] uppercase tracking-wider text-rose-500 rounded transition-all font-semibold font-mono bg-[#16161a] cursor-pointer"
                                 >
                                   <Trash2 className="w-3 h-3" />
@@ -968,7 +994,7 @@ export default function AdminDashboardClient() {
                                   .toLowerCase()
                                   .replace(/[^a-z0-9]+/g, "-")
                                   .replace(/(^-|-$)/g, "");
-                                setEditingPost((prev: any) => ({ ...prev, title: val, slug: prev?.slug ? prev.slug : slug }));
+                                setEditingPost((prev) => prev ? { ...prev, title: val, slug: prev.slug ? prev.slug : slug } : null);
                               }}
                               placeholder="E.g., Brand New App Deployed"
                               className="w-full px-4 py-2.5 rounded border border-white/[0.08] bg-[#1e1e24]/40 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-[#ff6a00]/40 transition-all"
@@ -982,7 +1008,7 @@ export default function AdminDashboardClient() {
                               type="text"
                               required
                               value={editingPost.slug || ""}
-                              onChange={(e) => setEditingPost((prev: any) => ({ ...prev, slug: e.target.value.toLowerCase().replace(/[^a-z0-9-]+/g, "") }))}
+                              onChange={(e) => setEditingPost((prev) => prev ? { ...prev, slug: e.target.value.toLowerCase().replace(/[^a-z0-9-]+/g, "") } : null)}
                               placeholder="e.g., brand-new-app-deployed"
                               className="w-full px-4 py-2.5 rounded border border-white/[0.08] bg-[#1e1e24]/40 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-[#ff6a00]/40 transition-all font-mono"
                             />
@@ -993,7 +1019,7 @@ export default function AdminDashboardClient() {
                             <label className="text-[10px] font-mono tracking-wider text-slate-400 uppercase font-semibold">Category</label>
                             <select
                               value={editingPost.category || "Company"}
-                              onChange={(e) => setEditingPost((prev: any) => ({ ...prev, category: e.target.value }))}
+                              onChange={(e) => setEditingPost((prev) => prev ? { ...prev, category: e.target.value } : null)}
                               className="w-full px-4 py-2.5 rounded border border-white/[0.08] bg-[#16161a] text-xs text-white focus:outline-none focus:border-[#ff6a00]/40 transition-all"
                             >
                               <option value="Product">Product</option>
@@ -1009,7 +1035,7 @@ export default function AdminDashboardClient() {
                               type="date"
                               required
                               value={editingPost.publish_date || ""}
-                              onChange={(e) => setEditingPost((prev: any) => ({ ...prev, publish_date: e.target.value }))}
+                              onChange={(e) => setEditingPost((prev) => prev ? { ...prev, publish_date: e.target.value } : null)}
                               className="w-full px-4 py-2.5 rounded border border-white/[0.08] bg-[#1e1e24]/40 text-xs text-white focus:outline-none focus:border-[#ff6a00]/40 transition-all font-mono"
                             />
                           </div>
@@ -1021,7 +1047,7 @@ export default function AdminDashboardClient() {
                               type="text"
                               required
                               value={editingPost.author || ""}
-                              onChange={(e) => setEditingPost((prev: any) => ({ ...prev, author: e.target.value }))}
+                              onChange={(e) => setEditingPost((prev) => prev ? { ...prev, author: e.target.value } : null)}
                               placeholder="E.g., Ramya, Tech Lead"
                               className="w-full px-4 py-2.5 rounded border border-white/[0.08] bg-[#1e1e24]/40 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-[#ff6a00]/40 transition-all"
                             />
@@ -1034,7 +1060,7 @@ export default function AdminDashboardClient() {
                               type="text"
                               required
                               value={editingPost.read_time || ""}
-                              onChange={(e) => setEditingPost((prev: any) => ({ ...prev, read_time: e.target.value }))}
+                              onChange={(e) => setEditingPost((prev) => prev ? { ...prev, read_time: e.target.value } : null)}
                               placeholder="E.g., 3 min read"
                               className="w-full px-4 py-2.5 rounded border border-white/[0.08] bg-[#1e1e24]/40 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-[#ff6a00]/40 transition-all"
                             />
@@ -1047,7 +1073,7 @@ export default function AdminDashboardClient() {
                               type="text"
                               required
                               value={editingPost.image_url || ""}
-                              onChange={(e) => setEditingPost((prev: any) => ({ ...prev, image_url: e.target.value }))}
+                              onChange={(e) => setEditingPost((prev) => prev ? { ...prev, image_url: e.target.value } : null)}
                               placeholder="E.g., /resource_growth_blog.png or external https:// link"
                               className="w-full px-4 py-2.5 rounded border border-white/[0.08] bg-[#1e1e24]/40 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-[#ff6a00]/40 transition-all font-mono"
                             />
@@ -1063,7 +1089,7 @@ export default function AdminDashboardClient() {
                                 <button
                                   key={preset}
                                   type="button"
-                                  onClick={() => setEditingPost((prev: any) => ({ ...prev, image_url: preset }))}
+                                  onClick={() => setEditingPost((prev) => prev ? { ...prev, image_url: preset } : null)}
                                   className={`px-2 py-0.5 rounded text-[8px] font-mono transition-all border cursor-pointer ${
                                     editingPost.image_url === preset
                                       ? "bg-[#ff6a00]/20 border-[#ff6a00]/50 text-white"
@@ -1083,7 +1109,7 @@ export default function AdminDashboardClient() {
                               required
                               rows={8}
                               value={editingPost.content || ""}
-                              onChange={(e) => setEditingPost((prev: any) => ({ ...prev, content: e.target.value }))}
+                              onChange={(e) => setEditingPost((prev) => prev ? { ...prev, content: e.target.value } : null)}
                               placeholder="Write your blog content here..."
                               className="w-full px-4 py-3 rounded border border-white/[0.08] bg-[#1e1e24]/40 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-[#ff6a00]/40 transition-all leading-relaxed"
                             />
@@ -1149,7 +1175,7 @@ export default function AdminDashboardClient() {
                           <div className="py-20 rounded-xl border border-dashed border-white/10 text-center space-y-2 bg-[#16161a]/20">
                             <FileText className="w-8 h-8 text-slate-600 mx-auto" />
                             <h4 className="text-sm font-semibold text-white">No database articles found</h4>
-                            <p className="text-xs text-slate-500 font-light">Seed the defaults or click "New Post" to start adding blog items.</p>
+                            <p className="text-xs text-slate-500 font-light">Seed the defaults or click &ldquo;New Post&rdquo; to start adding blog items.</p>
                           </div>
                         ) : (
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
