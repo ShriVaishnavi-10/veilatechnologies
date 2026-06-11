@@ -1,8 +1,8 @@
 import type { Metadata, Viewport } from "next";
-import { Outfit, Cinzel } from "next/font/google";
+import { Inter, Cinzel } from "next/font/google";
 import "./globals.css";
 
-const outfit = Outfit({
+const inter = Inter({
   variable: "--next-font-sans",
   subsets: ["latin"],
   display: "swap",
@@ -44,7 +44,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${outfit.variable} ${cinzel.variable} h-full antialiased`}
+      className={`${inter.variable} ${cinzel.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-[#0b0b0c] font-sans text-slate-100">
         {children}
