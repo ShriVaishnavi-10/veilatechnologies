@@ -44,12 +44,10 @@ export default function ClientEstimatorPage() {
       <Navbar />
 
       <main className="flex-grow pt-32 pb-20 relative">
-        {/* Background Gradients */}
         <div className="absolute top-0 left-1/4 w-96 h-96 bg-[#ff6a00]/10 rounded-full blur-[120px] pointer-events-none" />
         <div className="absolute bottom-10 right-1/4 w-96 h-96 bg-[#ff2b00]/5 rounded-full blur-[150px] pointer-events-none" />
 
         <div className="max-w-7xl mx-auto px-6 lg:px-8 relative z-10">
-          {/* Hero Section */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center mb-20">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -71,7 +69,6 @@ export default function ClientEstimatorPage() {
                 </p>
               </div>
 
-              {/* Core Details */}
               <div className="pt-6 border-t border-white/[0.06] space-y-4">
                 <h3 className="text-xs font-bold uppercase tracking-wider text-white flex items-center gap-2">
                   <CalcIcon className="w-4 h-4 text-[#ff6a00]" />
@@ -99,7 +96,6 @@ export default function ClientEstimatorPage() {
               </div>
             </motion.div>
 
-            {/* Right Column: Dynamic Operation Illustration */}
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -121,7 +117,6 @@ export default function ClientEstimatorPage() {
             </motion.div>
           </div>
 
-          {/* Calculator Container */}
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}

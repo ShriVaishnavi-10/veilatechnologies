@@ -10,7 +10,6 @@ export default function Contact() {
   const { scrollY } = useScroll();
   const glowY = useTransform(scrollY, [0, 800], [0, 60]);
 
-  // Mouse spotlight tracking
   const sectionX = useMotionValue(0);
   const sectionY = useMotionValue(0);
   const springSectionX = useSpring(sectionX, { stiffness: 85, damping: 24 });
@@ -61,7 +60,6 @@ export default function Contact() {
     }
   };
 
-  // Contact Form State
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
@@ -85,7 +83,6 @@ export default function Contact() {
         const res = await submitContactFormMock({ name, email, message });
         if (res.error) throw new Error("Sandbox submission failed");
         
-        // Save to localStorage for local testing
         if (typeof window !== "undefined") {
           const existing = localStorage.getItem("veila_contact_inquiries");
           const inquiries = existing ? JSON.parse(existing) : [];
@@ -115,13 +112,11 @@ export default function Contact() {
       id="contact" 
       className="relative py-16 sm:py-28 bg-[#0B0B0C] border-t border-white/[0.03] overflow-hidden"
     >
-      {/* Background scrolling glow */}
       <motion.div
         style={{ y: glowY }}
         className="absolute -top-12 -right-12 w-[350px] h-[350px] bg-[#ff6a00] opacity-[0.03] rounded-full blur-[100px] pointer-events-none"
       />
 
-      {/* Moving cursor spotlight halo background light */}
       <motion.div
         style={{
           x: useTransform(springSectionX, (val) => val - 350),
@@ -133,7 +128,6 @@ export default function Contact() {
       <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 items-start">
           
-          {/* Left Column: Details */}
           <motion.div
             initial={{ opacity: 0, x: -30 }}
             whileInView={{ opacity: 1, x: 0 }}
@@ -211,7 +205,6 @@ export default function Contact() {
             </motion.div>
           </motion.div>
 
-          {/* Right Column: Clean Form */}
           <motion.div
             initial={{ opacity: 0, x: 30 }}
             whileInView={{ opacity: 1, x: 0 }}
@@ -250,7 +243,6 @@ export default function Contact() {
                   className="space-y-6"
                 >
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                    {/* Name */}
                     <motion.div variants={formItemVariants} style={{ originX: 0 }} className="space-y-2">
                       <label className="text-[10px] font-mono tracking-wider text-slate-400 uppercase font-semibold">
                         Full Name
@@ -265,7 +257,6 @@ export default function Contact() {
                         className="w-full px-4 py-3 rounded border border-white/[0.08] bg-[#1e1e24]/40 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-[#ff6a00] focus:ring-2 focus:ring-[#ff6a00]/20 focus:bg-[#1e1e24]/60 transition-all duration-300"
                       />
                     </motion.div>
-                    {/* Email */}
                     <motion.div variants={formItemVariants} style={{ originX: 0 }} className="space-y-2">
                       <label className="text-[10px] font-mono tracking-wider text-slate-400 uppercase font-semibold">
                         Work Email
@@ -282,7 +273,6 @@ export default function Contact() {
                     </motion.div>
                   </div>
 
-                  {/* Category Selection */}
                   <motion.div variants={formItemVariants} style={{ originX: 0 }} className="space-y-2">
                     <label className="text-[10px] font-mono tracking-wider text-slate-400 uppercase font-semibold">
                       Inquiry Subject Area
@@ -301,7 +291,6 @@ export default function Contact() {
                     </motion.select>
                   </motion.div>
 
-                  {/* Message */}
                   <motion.div variants={formItemVariants} style={{ originX: 0 }} className="space-y-2">
                     <label className="text-[10px] font-mono tracking-wider text-slate-400 uppercase font-semibold">
                       Practice Requirements
@@ -327,7 +316,6 @@ export default function Contact() {
                     </motion.div>
                   )}
 
-                  {/* Submit Button */}
                   <motion.div variants={formItemVariants} style={{ originX: 0 }}>
                     <Magnetic range={80} strength={0.25}>
                       <motion.button

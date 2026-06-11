@@ -61,10 +61,8 @@ export default function CompanyUpdatesPage() {
         console.error("Failed to load updates from Supabase:", err);
       }
 
-      // Fallback to static list
       let list = [...companyUpdatesList];
       
-      // Local storage fallback for offline admin demo
       if (typeof window !== "undefined") {
         const localUpdates = localStorage.getItem("veila_company_updates");
         if (localUpdates) {
@@ -75,7 +73,6 @@ export default function CompanyUpdatesPage() {
               list = [...mappedLocal, ...list];
             }
           } catch (e) {
-            // ignore
           }
         }
       }
@@ -87,7 +84,6 @@ export default function CompanyUpdatesPage() {
     loadUpdates();
   }, []);
 
-  // Filter updates based on search query and category
   const filteredUpdates = updates.filter((update) => {
     const matchesCategory = activeCategory === "All" || update.category === activeCategory;
     const matchesSearch =
@@ -101,13 +97,11 @@ export default function CompanyUpdatesPage() {
       <Navbar />
 
       <main className="flex-grow pt-32 pb-20 relative">
-        {/* Background Gradients */}
         <div className="absolute top-0 left-1/4 w-96 h-96 bg-[#ff6a00]/10 rounded-full blur-[120px] pointer-events-none" />
         <div className="absolute bottom-10 right-1/4 w-96 h-96 bg-[#ff2b00]/5 rounded-full blur-[150px] pointer-events-none" />
 
         <div className="max-w-7xl mx-auto px-6 lg:px-8 relative z-10">
           
-          {/* Header Section */}
           <div className="max-w-3xl mb-12 sm:mb-16">
             <motion.div
               initial={{ opacity: 0, y: 15 }}
@@ -129,9 +123,7 @@ export default function CompanyUpdatesPage() {
             </motion.div>
           </div>
 
-          {/* Filters and Search Bar Container */}
           <div className="border-t border-white/[0.04] pt-8 pb-12 flex flex-col md:flex-row md:items-center justify-between gap-6">
-            {/* Category pills */}
             <div className="flex flex-wrap items-center gap-2">
               {categories.map((cat) => (
                 <button
@@ -155,7 +147,6 @@ export default function CompanyUpdatesPage() {
               ))}
             </div>
 
-            {/* Search Input */}
             <div className="relative max-w-sm w-full">
               <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
               <input
@@ -168,7 +159,6 @@ export default function CompanyUpdatesPage() {
             </div>
           </div>
 
-          {/* Timeline & Updates Feed */}
           <div className="relative">
             {loading ? (
               <div className="py-24 text-center space-y-3">
@@ -177,7 +167,6 @@ export default function CompanyUpdatesPage() {
               </div>
             ) : filteredUpdates.length > 0 ? (
               <div className="relative pl-6 sm:pl-12 border-l border-white/[0.06] space-y-16 py-4">
-                {/* Timeline active line overlay */}
                 <motion.div
                   initial={{ scaleY: 0 }}
                   whileInView={{ scaleY: 1 }}
@@ -198,7 +187,6 @@ export default function CompanyUpdatesPage() {
                       transition={{ duration: 0.6, type: "spring", stiffness: 80, damping: 15 }}
                       className="relative"
                     >
-                      {/* Timeline Dot Indicator */}
                       <motion.span
                         initial={{ scale: 0, boxShadow: "0 0 0px rgba(255, 106, 0, 0)" }}
                         whileInView={{ scale: 1, boxShadow: "0 0 16px rgba(255, 106, 0, 0.8)" }}
@@ -207,14 +195,12 @@ export default function CompanyUpdatesPage() {
                         className="absolute -left-[31.5px] sm:-left-[55.5px] top-1.5 w-3 h-3 rounded-full bg-[#ff6a00] border-4 border-[#0B0B0C] z-10"
                       />
 
-                      {/* Main Card */}
                       <Magnetic range={150} strength={0.06}>
                         <motion.div
                           whileHover={{ scale: 1.015, borderColor: "rgba(255, 106, 0, 0.25)", boxShadow: "0 15px 30px -10px rgba(255, 106, 0, 0.1)" }}
                           className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch bg-[#16161a]/30 rounded-2xl border border-white/[0.04] p-6 sm:p-8 hover:bg-[#16161a]/70 transition-all duration-300 cursor-pointer"
                         >
                           
-                          {/* Image Column */}
                           <div className="lg:col-span-4 relative rounded-xl overflow-hidden aspect-[16/10] lg:aspect-auto min-h-[160px] border border-white/[0.04]">
                             <img
                               src={update.imageUrl}
@@ -223,10 +209,8 @@ export default function CompanyUpdatesPage() {
                             />
                           </div>
 
-                          {/* Content Column */}
                           <div className="lg:col-span-8 flex flex-col justify-between space-y-4">
                             <div className="space-y-3">
-                              {/* Metadata */}
                               <div className="flex flex-wrap items-center gap-3 text-[10px] font-mono text-slate-500">
                                 <span className="flex items-center gap-1">
                                   <Calendar className="w-3.5 h-3.5 text-[#ff6a00]" />
@@ -243,18 +227,15 @@ export default function CompanyUpdatesPage() {
                                 </span>
                               </div>
 
-                              {/* Title */}
                               <h3 className="font-serif text-xl sm:text-2xl font-medium text-white hover:text-[#ff6a00] transition-colors leading-tight">
                                 {highlightText(update.title, searchQuery)}
                               </h3>
 
-                              {/* Description */}
                               <p className="text-xs sm:text-sm text-slate-400 font-light leading-relaxed">
                                 {highlightText(update.content, searchQuery)}
                               </p>
                             </div>
 
-                            {/* Author Footer */}
                             <div className="flex items-center gap-2 pt-4 border-t border-white/[0.04] text-[10px] font-mono text-slate-500">
                               <User className="w-3.5 h-3.5 text-[#ff6a00]" />
                               <span>Published by <strong className="text-slate-300 font-medium">{update.author}</strong></span>

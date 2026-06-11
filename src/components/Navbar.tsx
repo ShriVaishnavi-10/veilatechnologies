@@ -102,13 +102,11 @@ export default function Navbar() {
       <header
         className="fixed top-0 left-0 right-0 z-50 bg-gradient-to-r from-[#ff8a00] to-[#ff2b00] py-2.5 border-b border-white/[0.08] shadow-md"
       >
-        {/* Scroll Progress Bar */}
         <motion.div
           className="absolute bottom-0 left-0 right-0 h-[2.5px] bg-gradient-to-r from-yellow-300 via-white to-yellow-300 origin-[0%] z-50 shadow-[0_0_8px_rgba(253,224,71,0.8)]"
           style={{ scaleX }}
         />
         <div className="max-w-7xl mx-auto px-6 lg:px-8 flex items-center justify-between">
-          {/* Desktop Nav Links (Left) */}
           <motion.nav
             variants={navContainerVariants}
             initial="hidden"
@@ -132,7 +130,6 @@ export default function Navbar() {
                       <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${isDropdownOpen ? "rotate-180" : ""}`} />
                     </button>
 
-                    {/* Desktop Dropdown */}
                     <AnimatePresence>
                       {isDropdownOpen && (
                         <motion.div
@@ -188,7 +185,6 @@ export default function Navbar() {
             })}
           </motion.nav>
 
-          {/* Logo Badge (Right) */}
           <Magnetic range={50} strength={0.3}>
             <MotionLink
               href="/"
@@ -221,7 +217,6 @@ export default function Navbar() {
                       <stop offset="100%" stopColor="#FF1F00" />
                     </linearGradient>
                   </defs>
-                  {/* Outer Play Button Loop (Path 1) */}
                   <path
                     d="M 42 80 C 34 80, 30 76, 30 68 L 30 32 C 30 24, 34 20, 42 20 L 76 38 C 82 41, 82 59, 76 62 L 52 72"
                     stroke="url(#navOrangeRed)"
@@ -229,7 +224,6 @@ export default function Navbar() {
                     strokeLinecap="round"
                     strokeLinejoin="round"
                   />
-                  {/* Floating V (Path 2) */}
                   <path
                     d="M 41 42 L 48 59 L 55 42"
                     stroke="url(#navOrangeRed)"
@@ -245,7 +239,6 @@ export default function Navbar() {
             </MotionLink>
           </Magnetic>
 
-          {/* Mobile Menu Toggle */}
           <motion.button
             whileTap={{ scale: 0.9 }}
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -257,7 +250,6 @@ export default function Navbar() {
         </div>
       </header>
 
-      {/* Mobile Drawer */}
       <AnimatePresence>
         {isMobileMenuOpen && (
           <motion.div
@@ -274,7 +266,7 @@ export default function Navbar() {
                     <div key={link.name} className="flex flex-col gap-2">
                       <button
                         onClick={() => setIsMobileServicesOpen(!isMobileServicesOpen)}
-                        className="flex items-center justify-between text-xs font-semibold uppercase tracking-wider text-white/90 hover:text-white transition-colors w-full text-left bg-transparent border-none outline-none focus:outline-none"
+                        className="flex items-center justify-between text-xs font-semibold uppercase tracking-wider text-white/90 hover:text-white transition-colors w-full text-left py-3 bg-transparent border-none outline-none focus:outline-none"
                       >
                         <span>{link.name}</span>
                         <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${isMobileServicesOpen ? "rotate-180" : ""}`} />
@@ -286,7 +278,7 @@ export default function Navbar() {
                             animate={{ height: "auto", opacity: 1 }}
                             exit={{ height: 0, opacity: 0 }}
                             transition={{ duration: 0.2 }}
-                            className="overflow-hidden pl-4 flex flex-col gap-3.5 border-l border-white/10 mt-1"
+                            className="overflow-hidden pl-4 flex flex-col border-l border-white/10 mt-1"
                           >
                             {servicesList.map((service) => {
                               const Icon = service.icon;
@@ -295,7 +287,7 @@ export default function Navbar() {
                                   key={service.slug}
                                   href={`/services/${service.slug}`}
                                   onClick={() => setIsMobileMenuOpen(false)}
-                                  className="flex items-center gap-2.5 text-[11px] font-medium text-white/80 hover:text-white uppercase tracking-wider"
+                                  className="flex items-center gap-2.5 text-[11px] font-medium text-white/80 hover:text-white uppercase tracking-wider py-3"
                                 >
                                   <Icon className="w-3.5 h-3.5 text-[#ff6a00]" />
                                   <span>{service.name}</span>
@@ -317,7 +309,7 @@ export default function Navbar() {
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: idx * 0.05 }}
                     onClick={() => setIsMobileMenuOpen(false)}
-                    className="text-xs font-semibold uppercase tracking-wider text-white/90 hover:text-white transition-colors"
+                    className="text-xs font-semibold uppercase tracking-wider text-white/90 hover:text-white transition-colors py-3 block"
                   >
                     {link.name}
                   </MotionLink>

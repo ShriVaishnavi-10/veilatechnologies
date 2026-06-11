@@ -19,15 +19,12 @@ function PillarCard({ pillar, cardVariants, badgeVariants, idx }: {
   const mx = useMotionValue(0);
   const my = useMotionValue(0);
 
-  // Flat 2D depth parallax translations
   const contentX = useSpring(useTransform(mx, [-0.5, 0.5], [-8, 8]), { stiffness: 200, damping: 25 });
   const contentY = useSpring(useTransform(my, [-0.5, 0.5], [-8, 8]), { stiffness: 200, damping: 25 });
 
-  // Deeper 2D parallax for badge
   const deepX = useSpring(useTransform(mx, [-0.5, 0.5], [-12, 12]), { stiffness: 200, damping: 25 });
   const deepY = useSpring(useTransform(my, [-0.5, 0.5], [-12, 12]), { stiffness: 200, damping: 25 });
 
-  // Shine cursor tracking - reactive coordinates
   const shineX = useMotionValue(-1000);
   const shineY = useMotionValue(-1000);
   const shineBg = useTransform(
@@ -70,15 +67,13 @@ function PillarCard({ pillar, cardVariants, badgeVariants, idx }: {
             borderColor: "rgba(255, 106, 0, 0.3)", 
             backgroundColor: "rgba(22, 22, 26, 0.98)" 
           }}
-          className="flex items-start gap-3 sm:gap-4 p-5 sm:p-6 rounded-xl border border-white/[0.04] bg-[#16161a]/60 transition-all duration-300 hover:shadow-[0_15px_35px_rgba(255,106,0,0.05)] cursor-pointer relative overflow-hidden w-full"
+          className="flex items-start gap-3 sm:gap-4 p-5 sm:p-6 rounded-xl border border-white/[0.04] bg-[#16161a]/60 hover:shadow-[0_15px_35px_rgba(255,106,0,0.05)] cursor-pointer relative overflow-hidden w-full"
         >
-          {/* Shine Overlay */}
           <motion.div 
             className="absolute inset-0 pointer-events-none"
             style={{ background: shineBg }}
           />
 
-          {/* Check Circle Badge */}
           <motion.div
             variants={badgeVariants}
             style={{ x: deepX, y: deepY }}
@@ -141,7 +136,6 @@ export default function Metrics() {
     }
   ];
 
-  // Mouse cursor spotlight tracking for the entire section
   const sectionSpotlightX = useMotionValue(0);
   const sectionSpotlightY = useMotionValue(0);
   const springSectionSpotlightX = useSpring(sectionSpotlightX, { stiffness: 85, damping: 24 });
@@ -163,22 +157,10 @@ export default function Metrics() {
   };
 
   const cardVariants = {
-    hidden: (idx: number) => {
-      const col = idx % cols;
-      return {
-        x: `${-col * 110}%`,
-        y: 0,
-        opacity: 0,
-        scaleX: 0.05,
-        filter: "blur(8px)"
-      };
-    },
+    hidden: { opacity: 0, y: 50 },
     visible: {
-      x: 0,
-      y: 0,
       opacity: 1,
-      scaleX: 1,
-      filter: "blur(0px)",
+      y: 0,
       transition: {
         type: "spring",
         stiffness: 70,
@@ -198,7 +180,6 @@ export default function Metrics() {
       onMouseMove={handleSectionMouseMove}
       className="relative py-16 sm:py-28 bg-[#0B0B0C] border-t border-white/[0.03] overflow-hidden"
     >
-      {/* Moving background spotlight cursor halo */}
       <motion.div
         style={{
           x: useTransform(springSectionSpotlightX, (val) => val - 350),
@@ -207,7 +188,6 @@ export default function Metrics() {
         className="absolute top-0 left-0 w-[700px] h-[700px] bg-[#ff6a00]/[0.04] rounded-full blur-[120px] pointer-events-none z-0"
       />
 
-      {/* High-end stationary pulsing digital dot-grid background */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none z-0 opacity-[0.15]">
         <svg width="100%" height="100%" className="absolute inset-0">
           <defs>
@@ -217,7 +197,6 @@ export default function Metrics() {
           </defs>
           <rect width="100%" height="100%" fill="url(#dot-grid)" />
         </svg>
-        {/* Soft glowing pulsing tech points */}
         <motion.div
           animate={{ opacity: [0.15, 0.4, 0.15] }}
           transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
@@ -232,7 +211,6 @@ export default function Metrics() {
 
       <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-8">
         
-        {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 15 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -251,7 +229,6 @@ export default function Metrics() {
           </p>
         </motion.div>
 
-        {/* Pillars Grid */}
         <motion.div
           variants={gridVariants}
           initial="hidden"

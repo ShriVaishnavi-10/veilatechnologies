@@ -70,7 +70,6 @@ export default function Ecosystem() {
       <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 items-center">
           
-          {/* Left Side */}
           <div className="lg:col-span-5 space-y-6">
             <h2 className="text-[11px] font-mono tracking-widest text-slate-500 uppercase font-semibold">
               Infrastructure Observability
@@ -82,7 +81,6 @@ export default function Ecosystem() {
               Verify platform execution directly. Toggle below to watch live simulations of our database sync triggers, API response times, and automated infrastructure deployments.
             </p>
 
-            {/* Selector Buttons */}
             <div className="flex flex-col gap-3 pt-4 relative">
               {([
                 { id: "migrations", label: "Schema Migrations", icon: <Database className="w-4 h-4" /> },
@@ -116,7 +114,6 @@ export default function Ecosystem() {
               ))}
             </div>
 
-            {/* Feed Control */}
             <div className="flex items-center gap-4 pt-4 text-[10px] font-mono">
               <button
                 onClick={() => setIsRunning(!isRunning)}
@@ -137,10 +134,8 @@ export default function Ecosystem() {
             </div>
           </div>
 
-          {/* Right Side: Log Console */}
           <div className="lg:col-span-7">
             <div className="rounded-xl border border-[#970747]/[0.08] bg-white p-6 min-h-[360px] max-h-[360px] overflow-hidden flex flex-col font-mono text-xs shadow-[0_20px_50px_-10px_rgba(151,7,71,0.04)]">
-              {/* Console header */}
               <div className="flex items-center justify-between pb-3 border-b border-[#970747]/[0.06] mb-4">
                 <div className="flex items-center gap-1.5">
                   <span className="w-2 h-2 rounded-full bg-slate-300"></span>
@@ -151,7 +146,6 @@ export default function Ecosystem() {
                 <span className="text-[9px] text-slate-400 font-semibold">utf-8 stream</span>
               </div>
 
-              {/* Console Log Messages */}
               <div className="flex-1 overflow-y-auto space-y-3 pr-2 scrollbar-thin">
                 <AnimatePresence initial={false}>
                   {logs.map((log, index) => (

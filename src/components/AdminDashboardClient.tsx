@@ -51,20 +51,16 @@ export default function AdminDashboardClient() {
   const [loginLoading, setLoginLoading] = useState(false);
   const [authChecking, setAuthChecking] = useState(true);
   
-  // Tabs & Views
   const [activeTab, setActiveTab] = useState<"inquiries" | "blogs" | "applications">("inquiries");
 
-  // Inquiries State
   const [inquiries, setInquiries] = useState<Inquiry[]>([]);
   const [loading, setLoading] = useState(false);
   const [filter, setFilter] = useState("All");
 
-  // Blogs State
   const [blogPosts, setBlogPosts] = useState<BlogPost[]>([]);
   const [blogLoading, setBlogLoading] = useState(false);
   const [editingPost, setEditingPost] = useState<BlogPost | null>(null);
 
-  // Job Applications State
   const [applications, setApplications] = useState<JobApplication[]>([]);
   const [appLoading, setAppLoading] = useState(false);
   const [appFilter, setAppFilter] = useState("All");
@@ -74,7 +70,6 @@ export default function AdminDashboardClient() {
     setExpandedApps(prev => ({ ...prev, [id]: !prev[id] }));
   };
 
-  // Helper & Fetch Handlers (Declared before useEffect references to avoid hoisting warnings)
   const fetchApplications = async () => {
     setAppLoading(true);
     try {
@@ -92,7 +87,6 @@ export default function AdminDashboardClient() {
         }
       }
     } catch {
-      // Error fetching applications
     } finally {
       setAppLoading(false);
     }
@@ -126,7 +120,6 @@ export default function AdminDashboardClient() {
           : item
       ));
     } catch {
-      // Error updating status
     }
   };
 
@@ -155,7 +148,6 @@ export default function AdminDashboardClient() {
         String(item.id) !== String(applicationId) && String(item.created_at) !== String(applicationId)
       ));
     } catch {
-      // Error deleting application
     }
   };
 
@@ -170,14 +162,12 @@ export default function AdminDashboardClient() {
         if (error) throw error;
         setInquiries(data || []);
       } else {
-        // Load from local storage fallback
         if (typeof window !== "undefined") {
           const localData = localStorage.getItem("veila_contact_inquiries");
           setInquiries(localData ? JSON.parse(localData) : []);
         }
       }
     } catch {
-      // Error fetching inquiries details
     } finally {
       setLoading(false);
     }
@@ -190,7 +180,6 @@ export default function AdminDashboardClient() {
 
     try {
       if (isSupabaseConfigured && supabase) {
-        // Authenticate via Supabase Auth
         const { error } = await supabase.auth.signInWithPassword({
           email,
           password,
@@ -201,9 +190,7 @@ export default function AdminDashboardClient() {
           return;
         }
 
-        // Session listener will handle updating isLoggedIn state
       } else {
-        // Offline / fallback verification
         const targetEmail = process.env.NEXT_PUBLIC_ADMIN_EMAIL || "admin@veila.com";
         const targetPassword = process.env.NEXT_PUBLIC_ADMIN_ACCESS_KEY || "admin123";
 
@@ -228,7 +215,6 @@ export default function AdminDashboardClient() {
         await supabase.auth.signOut();
       }
     } catch {
-      // Ignore signOut errors
     } finally {
       sessionStorage.removeItem("veila_admin_logged");
       setIsLoggedIn(false);
@@ -237,7 +223,6 @@ export default function AdminDashboardClient() {
     }
   };
 
-  // Update Status in database or localStorage
   const handleUpdateStatus = async (inquiryId: string | number, newStatus: string) => {
     try {
       if (isSupabaseConfigured && supabase) {
@@ -258,7 +243,6 @@ export default function AdminDashboardClient() {
         }
       } 
       
-      // Update local storage
       if (typeof window !== "undefined") {
         const localData = localStorage.getItem("veila_contact_inquiries");
         if (localData) {
@@ -270,17 +254,14 @@ export default function AdminDashboardClient() {
         }
       }
 
-      // Update state
       setInquiries(prev => prev.map(item => {
         const isMatch = String(item.id) === String(inquiryId) || String(item.created_at) === String(inquiryId);
         return isMatch ? { ...item, status: newStatus } : item;
       }));
     } catch {
-      // Error updating status
     }
   };
 
-  // Delete Inquiry
   const handleDeleteInquiry = async (inquiryId: string | number) => {
     if (!confirm("Are you sure you want to archive and delete this inquiry?")) return;
 
@@ -303,7 +284,6 @@ export default function AdminDashboardClient() {
         }
       }
 
-      // Delete from local storage
       if (typeof window !== "undefined") {
         const localData = localStorage.getItem("veila_contact_inquiries");
         if (localData) {
@@ -315,11 +295,9 @@ export default function AdminDashboardClient() {
 
       setInquiries(prev => prev.filter(item => String(item.id) !== String(inquiryId) && String(item.created_at) !== String(inquiryId)));
     } catch {
-      // Error deleting inquiry
     }
   };
 
-  // Blog Handlers
   const fetchBlogPosts = async () => {
     setBlogLoading(true);
     try {
@@ -339,7 +317,6 @@ export default function AdminDashboardClient() {
         }
       }
     } catch {
-      // Error fetching blog posts
     } finally {
       setBlogLoading(false);
     }
@@ -397,7 +374,6 @@ export default function AdminDashboardClient() {
           }
         }
       } else {
-        // Local storage fallback for offline demo
         if (typeof window !== "undefined") {
           const localData = localStorage.getItem("veila_company_updates");
           const parsed: BlogPost[] = localData ? JSON.parse(localData) : [];
@@ -532,12 +508,10 @@ export default function AdminDashboardClient() {
     }
   };
 
-  // Check login state on mount
   useEffect(() => {
     let authListener: { unsubscribe: () => void } | null = null;
 
     if (isSupabaseConfigured && supabase) {
-      // Get current session
       supabase.auth.getSession().then(({ data: { session } }) => {
         if (session) {
           setTimeout(() => {
@@ -553,7 +527,6 @@ export default function AdminDashboardClient() {
         setTimeout(() => setAuthChecking(false), 0);
       });
 
-      // Listen to auth changes
       const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
         if (event === "SIGNED_IN" && session) {
           setTimeout(() => {
@@ -569,7 +542,6 @@ export default function AdminDashboardClient() {
       });
       authListener = subscription;
     } else {
-      // Fallback local session checking
       setTimeout(() => {
         if (typeof window !== "undefined") {
           const logged = sessionStorage.getItem("veila_admin_logged");
@@ -588,7 +560,6 @@ export default function AdminDashboardClient() {
     };
   }, []);
 
-  // Fetch data depending on active tab
   useEffect(() => {
     if (isLoggedIn) {
       if (activeTab === "inquiries") {
@@ -601,7 +572,6 @@ export default function AdminDashboardClient() {
     }
   }, [isLoggedIn, activeTab]);
 
-  // Filtering
   const filteredInquiries = filter === "All"
     ? inquiries
     : filter === "Completed"
@@ -615,7 +585,6 @@ export default function AdminDashboardClient() {
         return true;
       });
 
-  // Stats
   const totalCount = inquiries.length;
   const newCount = inquiries.filter(item => !item.status || item.status === "New").length;
   const completedCount = inquiries.filter(item => item.status === "Contacted").length;
@@ -644,7 +613,6 @@ export default function AdminDashboardClient() {
   return (
     <div className="flex flex-col min-h-screen bg-[#0B0B0C] text-slate-100 overflow-hidden">
       <main className="flex-grow pt-16 pb-20 relative">
-        {/* Background ambient lighting */}
         <div className="absolute top-0 left-1/4 w-96 h-96 bg-[#ff6a00]/10 rounded-full blur-[120px] pointer-events-none" />
         <div className="absolute bottom-10 right-1/4 w-96 h-96 bg-[#ff2b00]/5 rounded-full blur-[150px] pointer-events-none" />
 
@@ -660,7 +628,6 @@ export default function AdminDashboardClient() {
                 exit={{ opacity: 0, y: -15 }}
                 className="max-w-md mx-auto space-y-8 pt-8"
               >
-                {/* Warning Card for Users */}
                 <div className="p-6 rounded-2xl border border-rose-500/20 bg-rose-500/[0.02] space-y-4">
                   <h2 className="text-sm font-bold uppercase tracking-wider text-rose-500 flex items-center gap-2 font-mono">
                     <ShieldAlert className="w-4 h-4 shrink-0" />
@@ -678,7 +645,6 @@ export default function AdminDashboardClient() {
                   </Link>
                 </div>
 
-                {/* Login Form Panel */}
                 <div className="p-6 sm:p-8 rounded-xl border border-white/[0.04] bg-[#16161a] shadow-2xl space-y-6">
                   <div className="text-center space-y-2">
                     <div className="p-3 bg-[#ff6a00]/10 border border-[#ff6a00]/20 rounded-full w-fit mx-auto text-[#ff6a00]">
@@ -769,7 +735,6 @@ export default function AdminDashboardClient() {
                   </div>
                   
                   <div className="flex items-center gap-3">
-                    {/* Tab Toggles */}
                     <div className="flex bg-[#16161a] border border-white/5 p-1 rounded-lg">
                       <button
                         onClick={() => { setActiveTab("inquiries"); setEditingPost(null); }}
@@ -818,10 +783,8 @@ export default function AdminDashboardClient() {
                   </div>
                 </div>
 
-                {/* INQUIRIES PANEL */}
                 {activeTab === "inquiries" && (
                   <>
-                    {/* Stats Summary Panel */}
                     <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 sm:gap-6">
                       <div className="p-4 rounded-xl border border-white/[0.04] bg-[#16161a]/40 backdrop-blur-sm">
                         <span className="text-[9px] font-mono tracking-wider text-slate-500 uppercase font-semibold block">Total Submissions</span>
@@ -845,7 +808,6 @@ export default function AdminDashboardClient() {
                       </div>
                     </div>
 
-                    {/* Actions & Filters */}
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pt-4">
                       <div className="flex items-center gap-2">
                         <Filter className="w-3.5 h-3.5 text-slate-500" />
@@ -868,7 +830,6 @@ export default function AdminDashboardClient() {
                       </div>
                     </div>
 
-                    {/* Main List */}
                     {loading ? (
                       <div className="py-24 text-center space-y-3">
                         <Loader2 className="w-6 h-6 animate-spin text-[#ff6a00] mx-auto" />
@@ -961,7 +922,6 @@ export default function AdminDashboardClient() {
                   </>
                 )}
 
-                {/* BLOGS PANEL */}
                 {activeTab === "blogs" && (
                   <div className="space-y-6">
                     {editingPost ? (
@@ -981,7 +941,6 @@ export default function AdminDashboardClient() {
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                          {/* Title */}
                           <div className="space-y-2 text-left">
                             <label className="text-[10px] font-mono tracking-wider text-slate-400 uppercase font-semibold">Title</label>
                             <input
@@ -1001,7 +960,6 @@ export default function AdminDashboardClient() {
                             />
                           </div>
 
-                          {/* Slug */}
                           <div className="space-y-2 text-left">
                             <label className="text-[10px] font-mono tracking-wider text-slate-400 uppercase font-semibold">Slug (URL identifier)</label>
                             <input
@@ -1014,7 +972,6 @@ export default function AdminDashboardClient() {
                             />
                           </div>
 
-                          {/* Category */}
                           <div className="space-y-2 text-left">
                             <label className="text-[10px] font-mono tracking-wider text-slate-400 uppercase font-semibold">Category</label>
                             <select
@@ -1028,7 +985,6 @@ export default function AdminDashboardClient() {
                             </select>
                           </div>
 
-                          {/* Publish Date */}
                           <div className="space-y-2 text-left">
                             <label className="text-[10px] font-mono tracking-wider text-slate-400 uppercase font-semibold">Publish Date</label>
                             <input
@@ -1040,7 +996,6 @@ export default function AdminDashboardClient() {
                             />
                           </div>
 
-                          {/* Author */}
                           <div className="space-y-2 text-left">
                             <label className="text-[10px] font-mono tracking-wider text-slate-400 uppercase font-semibold">Author</label>
                             <input
@@ -1053,7 +1008,6 @@ export default function AdminDashboardClient() {
                             />
                           </div>
 
-                          {/* Read Time */}
                           <div className="space-y-2 text-left">
                             <label className="text-[10px] font-mono tracking-wider text-slate-400 uppercase font-semibold">Read Time</label>
                             <input
@@ -1066,7 +1020,6 @@ export default function AdminDashboardClient() {
                             />
                           </div>
 
-                          {/* Image URL with presets */}
                           <div className="space-y-2 md:col-span-2 text-left">
                             <label className="text-[10px] font-mono tracking-wider text-slate-400 uppercase font-semibold">Image URL</label>
                             <input
@@ -1102,7 +1055,6 @@ export default function AdminDashboardClient() {
                             </div>
                           </div>
 
-                          {/* Content */}
                           <div className="space-y-2 md:col-span-2 text-left">
                             <label className="text-[10px] font-mono tracking-wider text-slate-400 uppercase font-semibold">Post Content</label>
                             <textarea
@@ -1135,7 +1087,6 @@ export default function AdminDashboardClient() {
                     ) : (
                       /* BLOG LIST VIEW */
                       <div className="space-y-6">
-                        {/* Blog Actions Toolbar */}
                         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 p-4 rounded-xl border border-white/[0.04] bg-[#16161a]/40">
                           <div className="text-left">
                             <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 font-mono">Blog Controls</h4>
@@ -1165,7 +1116,6 @@ export default function AdminDashboardClient() {
                           </div>
                         </div>
 
-                        {/* Blog Loader or Grid */}
                         {blogLoading ? (
                           <div className="py-24 text-center space-y-3">
                             <Loader2 className="w-6 h-6 animate-spin text-[#ff6a00] mx-auto" />
@@ -1185,7 +1135,6 @@ export default function AdminDashboardClient() {
                                 className="p-5 rounded-xl border border-white/[0.04] bg-[#16161a]/50 backdrop-blur-sm space-y-4 hover:border-white/[0.08] transition-all flex flex-col justify-between"
                               >
                                 <div className="space-y-3">
-                                  {/* Thumbnail & Category */}
                                   <div className="relative aspect-[16/8] rounded-lg overflow-hidden border border-white/[0.04] bg-black/20">
                                     <img
                                       src={post.image_url}
@@ -1197,7 +1146,6 @@ export default function AdminDashboardClient() {
                                     </span>
                                   </div>
 
-                                  {/* Info */}
                                   <div className="space-y-1 text-left">
                                     <h5 className="font-serif text-base font-semibold text-white leading-tight hover:text-[#ff6a00] transition-colors">
                                       {post.title}
@@ -1215,13 +1163,11 @@ export default function AdminDashboardClient() {
                                     </div>
                                   </div>
 
-                                  {/* Snippet */}
                                   <p className="text-slate-400 text-xs font-light line-clamp-3 leading-relaxed text-left">
                                     {post.content}
                                   </p>
                                 </div>
 
-                                {/* Controls */}
                                 <div className="flex items-center justify-between pt-3 border-t border-white/[0.04] mt-2">
                                   <span className="text-[8px] font-mono text-slate-500 select-all">
                                     /{post.slug}
@@ -1253,10 +1199,8 @@ export default function AdminDashboardClient() {
                   </div>
                 )}
 
-                {/* JOB APPLICATIONS PANEL */}
                 {activeTab === "applications" && (
                   <div className="space-y-6">
-                    {/* Stats Summary Panel */}
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
                       <div className="p-4 rounded-xl border border-white/[0.04] bg-[#16161a]/40 backdrop-blur-sm">
                         <span className="text-[9px] font-mono tracking-wider text-slate-500 uppercase font-semibold block">Total Applications</span>
@@ -1272,7 +1216,6 @@ export default function AdminDashboardClient() {
                       </div>
                     </div>
 
-                    {/* Filters & Actions */}
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pt-4">
                       <div className="flex items-center gap-2">
                         <Filter className="w-3.5 h-3.5 text-slate-500" />
@@ -1295,7 +1238,6 @@ export default function AdminDashboardClient() {
                       </div>
                     </div>
 
-                    {/* Main Applications List */}
                     {appLoading ? (
                       <div className="py-24 text-center space-y-3">
                         <Loader2 className="w-6 h-6 animate-spin text-[#ff6a00] mx-auto" />
@@ -1323,7 +1265,6 @@ export default function AdminDashboardClient() {
                               layout
                               className="p-5 sm:p-6 rounded-xl border border-white/[0.04] bg-[#16161a]/50 backdrop-blur-sm space-y-4 hover:border-white/[0.08] transition-all"
                             >
-                              {/* Header Row */}
                               <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
                                 <div className="space-y-1.5 text-left">
                                   <div className="flex flex-wrap items-center gap-2">
@@ -1361,7 +1302,6 @@ export default function AdminDashboardClient() {
                                 </div>
                               </div>
 
-                              {/* Details Toggle Button */}
                               <div className="text-left pt-2 border-t border-white/[0.04]">
                                 <button
                                   onClick={() => toggleExpandApp(item.id || String(idx))}
@@ -1371,7 +1311,6 @@ export default function AdminDashboardClient() {
                                   <span>{isExpanded ? "Hide Cover Letter" : "Read Cover Letter"}</span>
                                 </button>
 
-                                {/* Collapsible Cover Letter Box */}
                                 <AnimatePresence>
                                   {isExpanded && (
                                     <motion.div
@@ -1388,7 +1327,6 @@ export default function AdminDashboardClient() {
                                 </AnimatePresence>
                               </div>
 
-                              {/* Footer Action Controls */}
                               <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-3 border-t border-white/[0.04] mt-2">
                                 <div className="flex flex-wrap items-center gap-3">
                                   <a

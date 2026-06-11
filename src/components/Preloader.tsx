@@ -21,10 +21,8 @@ export default function Preloader() {
     const mountTimer = setTimeout(() => {
       setMounted(true);
     }, 0);
-    // Lock scrolling on mount
     document.body.style.overflow = "hidden";
 
-    // Mark as loaded immediately to prevent repeat preloads if user navigates during curtain animation
     if (typeof window !== "undefined") {
       interface CustomWindow extends Window { veila_preloader_loaded?: boolean; }
       ((window as unknown) as CustomWindow).veila_preloader_loaded = true;
@@ -44,7 +42,6 @@ export default function Preloader() {
       const elapsed = now - startTime;
       const pct = Math.min(elapsed / duration, 1);
       
-      // Use cubic easeOut for smooth decelerating counter
       const ease = 1 - Math.pow(1 - pct, 3);
       const current = Math.floor(ease * 100);
       
@@ -55,16 +52,13 @@ export default function Preloader() {
       } else {
         setProgress(100);
         
-        // Step 1: Wait 350ms, then fade out the center content
         t1 = setTimeout(() => {
           setShowContent(false);
           
-          // Step 2: After content fades out (300ms), start curtain slide out
           t2 = setTimeout(() => {
             setIsFinished(true);
             document.body.style.overflow = ""; // Unlock scroll immediately when curtains start moving
             
-            // Step 3: Wait 800ms (curtain animation length), then fully unmount component
             t3 = setTimeout(() => {
               setLoading(false);
             }, 800);
@@ -85,7 +79,6 @@ export default function Preloader() {
     };
   }, [loading]);
 
-  // Determine stage text based on progress
   const getStageText = (prog: number) => {
     if (prog < 25) return "Connecting to Nodes...";
     if (prog < 55) return "Compiling Digital Assets...";
@@ -98,7 +91,6 @@ export default function Preloader() {
 
   return (
     <div className="fixed inset-0 z-[9999] pointer-events-none select-none overflow-hidden">
-      {/* Top Curtain Panel (Obsidian dark background) */}
       <div
         className="absolute top-0 left-0 right-0 h-[50.5vh] bg-[#0B0B0C] bg-grid-preloader border-b border-white/[0.03] pointer-events-auto"
         style={{
@@ -107,7 +99,6 @@ export default function Preloader() {
         }}
       />
 
-      {/* Bottom Curtain Panel (Obsidian dark background) */}
       <div
         className="absolute bottom-0 left-0 right-0 h-[50.5vh] bg-[#0B0B0C] bg-grid-preloader border-t border-white/[0.03] pointer-events-auto"
         style={{
@@ -116,7 +107,6 @@ export default function Preloader() {
         }}
       />
 
-      {/* Center Graphic and Content Wrapper */}
       <div
         className="absolute inset-0 flex flex-col items-center justify-center text-white pointer-events-auto z-10"
         style={{
@@ -125,7 +115,6 @@ export default function Preloader() {
           transition: "opacity 0.3s ease-out, transform 0.3s ease-out"
         }}
       >
-        {/* SVG Vector Logo Animation (Pure CSS self-contained animations) */}
         <div className="relative w-48 h-48 mb-8 flex items-center justify-center">
           <svg viewBox="0 0 100 100" fill="none" className="w-40 h-40 overflow-visible">
             <defs>
@@ -152,10 +141,8 @@ export default function Preloader() {
                 to { stroke-dashoffset: 0; }
               }
             `}} />
-            {/* Glowing background blur */}
             <circle cx="50" cy="50" r="25" fill="#FF5E00" className="opacity-10" style={{ filter: "blur(16px)" }} />
             
-            {/* Outer Play Button Loop (Path 1) */}
             <path
               d="M 42 80 C 34 80, 30 76, 30 68 L 30 32 C 30 24, 34 20, 42 20 L 76 38 C 82 41, 82 59, 76 62 L 52 72"
               stroke="url(#loaderOrangeRed)"
@@ -165,7 +152,6 @@ export default function Preloader() {
               className="loader-path-1"
             />
             
-            {/* Floating V (Path 2) */}
             <path
               d="M 41 42 L 48 59 L 55 42"
               stroke="url(#loaderOrangeRed)"
@@ -175,11 +161,9 @@ export default function Preloader() {
               className="loader-v"
             />
           </svg>
-          {/* Decorative soft halo */}
           <div className="absolute inset-0 bg-[#FF5E00]/5 blur-xl rounded-full scale-75 animate-pulse"></div>
         </div>
 
-        {/* Title Reveal (Clean, Stagger-delayed spans via inline style transitions) */}
         <div className="text-center space-y-3">
           <div className="flex items-center justify-center gap-[0.2em] font-serif font-bold text-2xl sm:text-3xl tracking-[0.2em] uppercase select-none">
             <span
@@ -215,12 +199,10 @@ export default function Preloader() {
           </p>
         </div>
 
-        {/* Elegant Italic Serif Odometer */}
         <div className="font-serif italic text-6xl sm:text-7xl text-white/95 mt-8 mb-4 tracking-tighter select-none font-medium tabular-nums">
           {progress.toString().padStart(3, "0")}%
         </div>
 
-        {/* Horizontal Progress Line */}
         <div className="w-[200px] h-[1px] bg-white/10 relative overflow-hidden rounded-full">
           <div
             className="absolute top-0 left-0 h-full bg-gradient-to-r from-[#ff8a00] to-[#ff1f00] shadow-[0_0_8px_rgba(255,106,0,0.5)]"
@@ -231,7 +213,6 @@ export default function Preloader() {
           />
         </div>
 
-        {/* Milestone status label */}
         <span
           className="text-[8px] font-mono tracking-[0.15em] text-slate-400 pt-4 uppercase block h-4 transition-all duration-200"
           style={{

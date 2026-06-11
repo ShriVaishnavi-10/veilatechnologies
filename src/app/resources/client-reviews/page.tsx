@@ -72,12 +72,10 @@ export default function ClientReviewsPage() {
       <Navbar />
 
       <main className="flex-grow pt-32 pb-20 relative">
-        {/* Background Gradients */}
         <div className="absolute top-0 left-1/4 w-96 h-96 bg-[#ff6a00]/10 rounded-full blur-[120px] pointer-events-none" />
         <div className="absolute bottom-10 right-1/4 w-96 h-96 bg-[#ff2b00]/5 rounded-full blur-[150px] pointer-events-none" />
 
         <div className="max-w-7xl mx-auto px-6 lg:px-8 relative z-10">
-          {/* Header Section */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center mb-16">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -100,7 +98,6 @@ export default function ClientReviewsPage() {
               </div>
             </motion.div>
 
-            {/* Right Column: Decorative Illustration Box */}
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -122,7 +119,6 @@ export default function ClientReviewsPage() {
             </motion.div>
           </div>
 
-          {/* Reviews Grid */}
           <div className="border-t border-white/[0.04] pt-12">
             <motion.div
               variants={containerVariants}
@@ -139,14 +135,12 @@ export default function ClientReviewsPage() {
                   className="p-6 sm:p-8 rounded-xl border border-white/[0.04] bg-[#16161a]/40 hover:shadow-md transition-all duration-300 flex flex-col justify-between"
                 >
                   <div className="space-y-4">
-                    {/* Ratings stars */}
                     <div className="flex items-center gap-0.5 text-[#ff6a00]">
                       {Array.from({ length: review.rating }).map((_, i) => (
                         <Star key={i} className="w-3.5 h-3.5 fill-current" />
                       ))}
                     </div>
                     
-                    {/* Review body */}
                     <p className="text-slate-300 text-xs italic font-light leading-relaxed">
                       &ldquo;{review.review}&rdquo;
                     </p>

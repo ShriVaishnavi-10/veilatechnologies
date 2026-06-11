@@ -37,11 +37,9 @@ function ProjectCard({ project, itemVariants, idx }: {
   const mx = useMotionValue(0);
   const my = useMotionValue(0);
 
-  // Flat 2D depth parallax translations
   const contentX = useSpring(useTransform(mx, [-0.5, 0.5], [-8, 8]), { stiffness: 200, damping: 25 });
   const contentY = useSpring(useTransform(my, [-0.5, 0.5], [-8, 8]), { stiffness: 200, damping: 25 });
 
-  // Shine cursor tracking - reactive coordinates
   const shineX = useMotionValue(-1000);
   const shineY = useMotionValue(-1000);
   const shineBg = useTransform(
@@ -84,9 +82,8 @@ function ProjectCard({ project, itemVariants, idx }: {
             borderColor: "rgba(255, 106, 0, 0.3)", 
             backgroundColor: "rgba(22, 22, 26, 0.98)" 
           }}
-          className="flex flex-col justify-between p-6 sm:p-8 rounded-xl border border-white/[0.04] bg-[#16161a]/50 backdrop-blur-sm transition-all duration-300 hover:shadow-[0_10px_35px_rgba(255,106,0,0.05)] cursor-pointer relative overflow-hidden w-full"
+          className="flex flex-col justify-between p-6 sm:p-8 rounded-xl border border-white/[0.04] bg-[#16161a]/50 hover:shadow-[0_10px_35px_rgba(255,106,0,0.05)] cursor-pointer relative overflow-hidden w-full"
         >
-          {/* Shine Overlay */}
           <motion.div 
             className="absolute inset-0 pointer-events-none"
             style={{ background: shineBg }}
@@ -109,7 +106,6 @@ function ProjectCard({ project, itemVariants, idx }: {
                 {project.description}
               </p>
 
-              {/* Tech Badges */}
               <div className="flex flex-wrap gap-1.5 pt-2 mt-4">
                 {project.tags.map((tag, tIdx) => (
                   <span
@@ -123,7 +119,6 @@ function ProjectCard({ project, itemVariants, idx }: {
               </div>
             </div>
 
-            {/* Quantifiable Results pill */}
             <div className="mt-8 pt-5 border-t border-white/[0.04] flex items-start gap-2.5 bg-gradient-to-r from-[#ff6a00]/[0.02] to-transparent p-2.5 rounded-lg border border-[#ff6a00]/[0.05] w-full">
               <Zap className="w-4 h-4 text-[#ff6a00] shrink-0 mt-0.5" />
               <div className="space-y-0.5 text-left">
@@ -145,7 +140,6 @@ function ProjectCard({ project, itemVariants, idx }: {
 export default function ServiceDetailClient({ service }: ServiceDetailClientProps) {
   const [cols, setCols] = React.useState(1);
 
-  // Hero Section Mouse Parallax
   const heroX = useMotionValue(0);
   const heroY = useMotionValue(0);
   const springHeroX = useSpring(heroX, { stiffness: 150, damping: 20 });
@@ -167,7 +161,6 @@ export default function ServiceDetailClient({ service }: ServiceDetailClientProp
     heroY.set(0);
   };
 
-  // Bottom CTA Spotlight
   const ctaX = useMotionValue(0);
   const ctaY = useMotionValue(0);
   const springCtaX = useSpring(ctaX, { stiffness: 100, damping: 20 });
@@ -222,7 +215,7 @@ export default function ServiceDetailClient({ service }: ServiceDetailClientProp
         y: 0,
         opacity: 0,
         scaleX: 0.05,
-        filter: "blur(8px)"
+        filter: "none"
       };
     },
     visible: {
@@ -230,7 +223,7 @@ export default function ServiceDetailClient({ service }: ServiceDetailClientProp
       y: 0,
       opacity: 1,
       scaleX: 1,
-      filter: "blur(0px)",
+      filter: "none",
       transition: {
         type: "spring",
         stiffness: 70,
@@ -260,17 +253,14 @@ export default function ServiceDetailClient({ service }: ServiceDetailClientProp
 
   return (
     <div key={service.slug} className="flex flex-col min-h-screen bg-[#0B0B0C] text-slate-100 overflow-hidden">
-      {/* Floating Header */}
       <Navbar />
 
       <main className="flex-grow pt-32 pb-20 relative">
-        {/* Background Gradients */}
         <div className="absolute top-0 left-1/4 w-96 h-96 bg-[#ff6a00]/10 rounded-full blur-[120px] pointer-events-none" />
         <div className="absolute bottom-10 right-1/4 w-96 h-96 bg-[#ff2b00]/5 rounded-full blur-[150px] pointer-events-none" />
 
         <div className="max-w-7xl mx-auto px-6 lg:px-8 relative z-10">
 
-          {/* Hero Section */}
           <div 
             onMouseMove={handleHeroMouseMove}
             onMouseLeave={handleHeroMouseLeave}
@@ -322,7 +312,6 @@ export default function ServiceDetailClient({ service }: ServiceDetailClientProp
                 </motion.p>
               </div>
 
-              {/* Core Capabilities */}
               <div className="pt-6 border-t border-white/[0.06] space-y-4">
                 <h3 className="text-xs font-bold uppercase tracking-wider text-white flex items-center gap-2">
                   <IconComponent className="w-4 h-4 text-[#ff6a00]" />
@@ -350,20 +339,17 @@ export default function ServiceDetailClient({ service }: ServiceDetailClientProp
               </div>
             </motion.div>
 
-            {/* Right Column: Dynamic Service Illustration with Mouse Parallax */}
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.6, delay: 0.15 }}
               className="lg:col-span-5 flex items-center justify-center relative w-full overflow-visible"
             >
-              {/* Glowing backing circles - shifts with mouse coordinates */}
               <motion.div 
                 style={{ x: backingCircleX, y: backingCircleY }}
                 className="absolute w-[80%] h-[80%] bg-gradient-to-br from-[#ff8a00]/20 to-[#ff2b00]/20 rounded-full blur-[80px] opacity-40 z-0 pointer-events-none" 
               />
               
-              {/* Card container - shifts with mouse coordinates and floats */}
               <motion.div 
                 style={{ x: imageX, y: imageY }}
                 className="w-full relative z-10"
@@ -383,7 +369,6 @@ export default function ServiceDetailClient({ service }: ServiceDetailClientProp
             </motion.div>
           </div>
 
-          {/* Case Studies / Projects Section */}
           <div className="border-t border-white/[0.04] pt-16 sm:pt-24 mb-20">
             <motion.div
               initial={{ opacity: 0, y: 35 }}
@@ -416,7 +401,6 @@ export default function ServiceDetailClient({ service }: ServiceDetailClientProp
               </p>
             </motion.div>
 
-            {/* Projects Grid */}
             <motion.div
               variants={containerVariants}
               initial="hidden"
@@ -435,7 +419,6 @@ export default function ServiceDetailClient({ service }: ServiceDetailClientProp
             </motion.div>
           </div>
 
-          {/* Call to Action Section */}
           <motion.div
             initial={{ opacity: 0, y: 45 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -446,7 +429,6 @@ export default function ServiceDetailClient({ service }: ServiceDetailClientProp
             whileHover={{ scale: 1.01, borderColor: "rgba(255, 106, 0, 0.25)", boxShadow: "0 20px 40px -15px rgba(255, 106, 0, 0.15)" }}
             className="p-8 sm:p-12 rounded-2xl border border-white/[0.06] bg-gradient-to-br from-[#16161a] to-[#1e1e24]/20 shadow-2xl relative overflow-hidden text-center max-w-4xl mx-auto transition-all duration-300"
           >
-            {/* Spotlight background radial glow */}
             <motion.div 
               style={{ background: ctaGlowBg }}
               className="absolute inset-0 pointer-events-none z-0" 
@@ -485,7 +467,6 @@ export default function ServiceDetailClient({ service }: ServiceDetailClientProp
         </div>
       </main>
 
-      {/* Footer System */}
       <Footer />
     </div>
   );

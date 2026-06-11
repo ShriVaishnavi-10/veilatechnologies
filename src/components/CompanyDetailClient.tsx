@@ -20,12 +20,8 @@ const valuesContainerVariants: Variants = {
 };
 
 const valueItemVariants: Variants = {
-  hidden: { opacity: 0, x: -30, scaleX: 0.05, filter: "blur(6px)" },
-  visible: {
-    opacity: 1,
-    x: 0,
-    scaleX: 1,
-    filter: "blur(0px)",
+  hidden: { opacity: 0, y: 50 },
+  visible: { opacity: 1, y: 0,
     transition: { type: "spring", stiffness: 70, damping: 15 }
   }
 };
@@ -78,7 +74,7 @@ function JobOpeningCard({ job, itemVariants, idx, onApply }: {
             boxShadow: "0 20px 40px -15px rgba(255, 106, 0, 0.12)",
             backgroundColor: "rgba(22, 22, 26, 0.98)" 
           }}
-          className="p-6 sm:p-8 rounded-xl border border-white/[0.04] bg-[#16161a]/40 transition-all duration-300 text-left w-full cursor-pointer relative overflow-hidden"
+          className="p-6 sm:p-8 rounded-xl border border-white/[0.04] bg-[#16161a]/40 text-left w-full cursor-pointer relative overflow-hidden"
         >
           <motion.div style={{ x: contentX, y: contentY }} className="flex flex-col lg:flex-row lg:items-start justify-between gap-6 w-full">
             <div className="space-y-4 text-left w-full">
@@ -100,7 +96,6 @@ function JobOpeningCard({ job, itemVariants, idx, onApply }: {
                 {job.description}
               </p>
               
-              {/* Requirements list */}
               <div className="space-y-2 pt-2">
                 <h4 className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Core Requirements:</h4>
                 <ul className="space-y-1">
@@ -114,7 +109,6 @@ function JobOpeningCard({ job, itemVariants, idx, onApply }: {
               </div>
             </div>
 
-            {/* Apply CTA Button */}
             <div className="shrink-0 pt-2 lg:pt-0">
               <Magnetic range={60} strength={0.3}>
                 <button
@@ -142,7 +136,6 @@ interface CompanyDetailClientProps {
 export default function CompanyDetailClient({ company }: CompanyDetailClientProps) {
   const IconComponent = iconMap[company.slug as keyof typeof iconMap] || Building2;
 
-  // Career application modal form states
   const [isApplyModalOpen, setIsApplyModalOpen] = useState(false);
   const [selectedJob, setSelectedJob] = useState("");
   const [applicantName, setApplicantName] = useState("");
@@ -192,10 +185,8 @@ export default function CompanyDetailClient({ company }: CompanyDetailClientProp
 
         finalResumeUrl = publicUrl;
       } else {
-        // Wait 800ms to simulate network latency
         await new Promise((resolve) => setTimeout(resolve, 800));
         
-        // Convert file to Base64 data URL for local storage
         finalResumeUrl = await new Promise<string>((resolve, reject) => {
           const reader = new FileReader();
           reader.onload = () => resolve(reader.result as string);
@@ -232,7 +223,6 @@ export default function CompanyDetailClient({ company }: CompanyDetailClientProp
       }
 
       setSubmitSuccess(true);
-      // Reset form
       setApplicantName("");
       setApplicantEmail("");
       setApplicantPhone("");
@@ -261,30 +251,23 @@ export default function CompanyDetailClient({ company }: CompanyDetailClientProp
   };
 
   const itemVariants: Variants = {
-    hidden: { opacity: 0, x: -40, scaleX: 0.05, filter: "blur(8px)" },
-    visible: {
-      opacity: 1,
-      x: 0,
-      scaleX: 1,
-      filter: "blur(0px)",
+    hidden: { opacity: 0, y: 50 },
+    visible: { opacity: 1, y: 0,
       transition: { type: "spring", stiffness: 70, damping: 15 }
     }
   };
 
   return (
     <div key={company.slug} className="flex flex-col min-h-screen bg-[#0B0B0C] text-slate-100 overflow-hidden">
-      {/* Floating Header */}
       <Navbar />
 
       <main className="flex-grow pt-32 pb-20 relative">
-        {/* Background Gradients */}
         <div className="absolute top-0 left-1/4 w-96 h-96 bg-[#ff6a00]/10 rounded-full blur-[120px] pointer-events-none" />
         <div className="absolute bottom-10 right-1/4 w-96 h-96 bg-[#ff2b00]/5 rounded-full blur-[150px] pointer-events-none" />
 
         <div className="max-w-7xl mx-auto px-6 lg:px-8 relative z-10">
 
 
-          {/* Hero Section */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center mb-20">
             <motion.div
               initial={{ opacity: 0, y: 25 }}
@@ -332,7 +315,6 @@ export default function CompanyDetailClient({ company }: CompanyDetailClientProp
                 </motion.p>
               </div>
 
-              {/* Core Details */}
               <div className="pt-6 border-t border-white/[0.06] space-y-4">
                 <h3 className="text-xs font-bold uppercase tracking-wider text-white flex items-center gap-2">
                   <IconComponent className="w-4 h-4 text-[#ff6a00]" />
@@ -358,14 +340,12 @@ export default function CompanyDetailClient({ company }: CompanyDetailClientProp
               </div>
             </motion.div>
 
-            {/* Right Column: Dynamic Company Illustration */}
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.6, delay: 0.15 }}
               className="lg:col-span-5 flex items-center justify-center relative w-full overflow-visible"
             >
-              {/* Glowing backing circles */}
               <div className="absolute w-[80%] h-[80%] bg-gradient-to-br from-[#ff8a00]/20 to-[#ff2b00]/20 rounded-full blur-[80px] opacity-40 z-0 pointer-events-none" />
               
               <motion.div
@@ -382,11 +362,9 @@ export default function CompanyDetailClient({ company }: CompanyDetailClientProp
             </motion.div>
           </div>
 
-          {/* Conditional Layout Injection: About Company details */}
           {company.slug === "about" && (
             <div className="border-t border-white/[0.04] pt-16 sm:pt-24 space-y-12">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-start">
-                {/* Story and Mission */}
                 <motion.div
                   initial={{ opacity: 0, x: -30 }}
                   whileInView={{ opacity: 1, x: 0 }}
@@ -403,7 +381,6 @@ export default function CompanyDetailClient({ company }: CompanyDetailClientProp
                   </p>
                 </motion.div>
 
-                {/* Values Box Grid */}
                 <motion.div
                   initial={{ opacity: 0, x: 30 }}
                   whileInView={{ opacity: 1, x: 0 }}
@@ -450,7 +427,6 @@ export default function CompanyDetailClient({ company }: CompanyDetailClientProp
             </div>
           )}
 
-          {/* Conditional Layout Injection: Careers Listing details */}
           {company.slug === "careers" && (
             <motion.div
               initial={{ opacity: 0, y: 30 }}
@@ -463,12 +439,12 @@ export default function CompanyDetailClient({ company }: CompanyDetailClientProp
                 <h2 className="text-[11px] font-mono tracking-widest text-[#ff6a00] uppercase font-semibold">
                   Open Positions
                 </h2>
-                <h2 className="mt-3 font-serif text-3xl sm:text-4xl font-medium tracking-tight text-white flex flex-wrap gap-x-[0.2em] overflow-hidden">
+                <h2 className="mt-3 font-serif text-3xl sm:text-4xl font-medium tracking-tight text-white flex flex-wrap gap-x-[0.2em]">
                   {"Work with us from anywhere".split(" ").map((word, idx) => (
-                    <span key={idx} className="inline-block overflow-hidden py-1">
+                    <span key={idx} className="inline-block py-1">
                       <motion.span
                         inherit={false}
-                        initial={{ y: "100%", opacity: 0 }}
+                        initial={{ y: 20, opacity: 0 }}
                         whileInView={{ y: 0, opacity: 1 }}
                         viewport={{ once: false, amount: 0.15 }}
                         transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: idx * 0.05 }}
@@ -481,7 +457,6 @@ export default function CompanyDetailClient({ company }: CompanyDetailClientProp
                 </h2>
               </div>
 
-              {/* Job Listings stack */}
               <motion.div
                 variants={containerVariants}
                 initial="hidden"
@@ -500,7 +475,6 @@ export default function CompanyDetailClient({ company }: CompanyDetailClientProp
                 ))}
               </motion.div>
 
-              {/* General Job Submission Footer CTA */}
               <motion.div
                 initial={{ opacity: 0, y: 45 }}
                 whileInView={{ opacity: 1, y: 0 }}
@@ -527,7 +501,6 @@ export default function CompanyDetailClient({ company }: CompanyDetailClientProp
         </div>
       </main>
 
-      {/* Careers Application Form Modal */}
       <AnimatePresence>
         {isApplyModalOpen && (
           <motion.div
@@ -536,7 +509,6 @@ export default function CompanyDetailClient({ company }: CompanyDetailClientProp
             exit={{ opacity: 0 }}
             className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm pointer-events-auto"
           >
-            {/* Modal Box */}
             <motion.div
               initial={{ scale: 0.9, y: 30, opacity: 0 }}
               animate={{ scale: 1, y: 0, opacity: 1 }}
@@ -544,7 +516,6 @@ export default function CompanyDetailClient({ company }: CompanyDetailClientProp
               transition={{ type: "spring", stiffness: 220, damping: 18 }}
               className="relative w-full max-w-lg rounded-2xl border border-white/[0.08] bg-[#16161a] p-6 sm:p-8 shadow-2xl overflow-y-auto max-h-[90vh] text-left"
             >
-              {/* Close Button */}
               <button
                 onClick={() => setIsApplyModalOpen(false)}
                 className="absolute top-4 right-4 p-1 rounded-lg hover:bg-white/5 border border-transparent hover:border-white/10 text-slate-400 hover:text-white transition-colors cursor-pointer"
@@ -584,7 +555,6 @@ export default function CompanyDetailClient({ company }: CompanyDetailClientProp
                   </div>
 
                   <form onSubmit={handleApplySubmit} className="space-y-4">
-                    {/* Full Name */}
                     <div className="space-y-1.5">
                       <label className="text-[9px] font-mono tracking-wider text-slate-400 uppercase font-semibold">
                         Full Name
@@ -600,7 +570,6 @@ export default function CompanyDetailClient({ company }: CompanyDetailClientProp
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      {/* Email */}
                       <div className="space-y-1.5">
                         <label className="text-[9px] font-mono tracking-wider text-slate-400 uppercase font-semibold">
                           Email Address
@@ -614,7 +583,6 @@ export default function CompanyDetailClient({ company }: CompanyDetailClientProp
                           className="w-full px-3 py-2 rounded border border-white/[0.08] bg-[#1e1e24]/40 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-[#ff6a00]/40 focus:bg-[#1e1e24]/60 transition-all"
                         />
                       </div>
-                      {/* Phone */}
                       <div className="space-y-1.5">
                         <label className="text-[9px] font-mono tracking-wider text-slate-400 uppercase font-semibold">
                           Phone Number
@@ -630,7 +598,6 @@ export default function CompanyDetailClient({ company }: CompanyDetailClientProp
                       </div>
                     </div>
 
-                    {/* Resume Upload */}
                     <div className="space-y-1.5">
                       <label className="text-[9px] font-mono tracking-wider text-slate-400 uppercase font-semibold">
                         Upload Resume (PDF, DOC, DOCX)
@@ -656,7 +623,6 @@ export default function CompanyDetailClient({ company }: CompanyDetailClientProp
                       </div>
                     </div>
 
-                    {/* Portfolio URL */}
                     <div className="space-y-1.5">
                       <label className="text-[9px] font-mono tracking-wider text-slate-400 uppercase font-semibold">
                         Portfolio / GitHub Link (Optional)
@@ -670,7 +636,6 @@ export default function CompanyDetailClient({ company }: CompanyDetailClientProp
                       />
                     </div>
 
-                    {/* Cover Letter */}
                     <div className="space-y-1.5">
                       <label className="text-[9px] font-mono tracking-wider text-slate-400 uppercase font-semibold">
                         Brief Cover Letter / Introduction
@@ -691,7 +656,6 @@ export default function CompanyDetailClient({ company }: CompanyDetailClientProp
                       </div>
                     )}
 
-                    {/* Buttons */}
                     <div className="flex gap-4 pt-2">
                       <button
                         type="button"
@@ -723,7 +687,6 @@ export default function CompanyDetailClient({ company }: CompanyDetailClientProp
         )}
       </AnimatePresence>
 
-      {/* Footer System */}
       <Footer />
     </div>
   );

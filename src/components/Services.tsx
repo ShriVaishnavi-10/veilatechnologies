@@ -27,15 +27,12 @@ function ServiceCard({ service, cardVariants, iconVariants, arrowVariants, idx }
   const mx = useMotionValue(0);
   const my = useMotionValue(0);
 
-  // Flat 2D depth parallax translations
   const contentX = useSpring(useTransform(mx, [-0.5, 0.5], [-8, 8]), { stiffness: 200, damping: 25 });
   const contentY = useSpring(useTransform(my, [-0.5, 0.5], [-8, 8]), { stiffness: 200, damping: 25 });
 
-  // Deeper flat 2D parallax for icon
   const deepX = useSpring(useTransform(mx, [-0.5, 0.5], [-12, 12]), { stiffness: 200, damping: 25 });
   const deepY = useSpring(useTransform(my, [-0.5, 0.5], [-12, 12]), { stiffness: 200, damping: 25 });
 
-  // Shine cursor tracking - reactive coordinates
   const shineX = useMotionValue(-1000);
   const shineY = useMotionValue(-1000);
   const shineBg = useTransform(
@@ -78,9 +75,8 @@ function ServiceCard({ service, cardVariants, iconVariants, arrowVariants, idx }
             borderColor: "rgba(255, 106, 0, 0.3)", 
             backgroundColor: "rgba(22, 22, 26, 0.98)"
           }}
-          className="flex flex-col justify-between p-6 sm:p-8 rounded-xl border border-white/[0.04] bg-[#16161a] transition-all duration-300 shadow-[0_4px_20px_rgba(0,0,0,0.3)] hover:shadow-[0_15px_35px_rgba(255,106,0,0.06)] cursor-pointer relative overflow-hidden w-full"
+          className="flex flex-col justify-between p-6 sm:p-8 rounded-xl border border-white/[0.04] bg-[#16161a] shadow-[0_4px_20px_rgba(0,0,0,0.3)] hover:shadow-[0_15px_35px_rgba(255,106,0,0.06)] cursor-pointer relative overflow-hidden w-full"
         >
-          {/* Shine Overlay */}
           <motion.div 
             className="absolute inset-0 pointer-events-none"
             style={{ background: shineBg }}
@@ -88,7 +84,6 @@ function ServiceCard({ service, cardVariants, iconVariants, arrowVariants, idx }
 
           <motion.div style={{ x: contentX, y: contentY }} className="w-full flex-grow flex flex-col justify-between">
             <div className="w-full">
-              {/* Meta Category and Icon */}
               <div className="flex items-center justify-between pb-6 border-b border-white/[0.04] mb-6">
                 <span className="text-[9px] font-mono tracking-wider text-slate-500 uppercase font-semibold">
                   {service.category}
@@ -102,17 +97,14 @@ function ServiceCard({ service, cardVariants, iconVariants, arrowVariants, idx }
                 </motion.div>
               </div>
 
-              {/* Title */}
               <h3 className="text-lg font-semibold text-white font-sans tracking-tight mb-3">
                 {service.title}
               </h3>
 
-              {/* Description */}
               <p className="text-slate-400 text-xs font-light leading-relaxed mb-6">
                 {service.description}
               </p>
 
-              {/* Bullets */}
               <ul className="space-y-3 mb-8">
                 {service.details.map((detail, dIdx) => (
                   <li key={dIdx} className="flex items-start gap-2.5 text-xs text-slate-300 font-light">
@@ -123,7 +115,6 @@ function ServiceCard({ service, cardVariants, iconVariants, arrowVariants, idx }
               </ul>
             </div>
 
-            {/* Action link */}
             <div className="mt-auto w-full">
               <MotionLink
                 href={`/services/${service.slug}`}
@@ -246,7 +237,7 @@ export default function Services() {
         y: 0,
         opacity: 0,
         scaleX: 0.05,
-        filter: "blur(8px)"
+        filter: "none"
       };
     },
     visible: {
@@ -254,7 +245,7 @@ export default function Services() {
       y: 0,
       opacity: 1,
       scaleX: 1,
-      filter: "blur(0px)",
+      filter: "none",
       transition: {
         type: "spring",
         stiffness: 70,
@@ -278,7 +269,6 @@ export default function Services() {
     <section id="services" className="relative py-16 sm:py-28 bg-[#111113] border-y border-white/[0.03] overflow-hidden">
       <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-8">
         
-        {/* Header section */}
         <div className="max-w-3xl mb-20 text-left">
           <motion.h2 
             initial={{ opacity: 0, y: 10 }}
@@ -321,7 +311,6 @@ export default function Services() {
           </motion.p>
         </div>
 
-        {/* Dynamic Grid Layout with viewport scroll trigger */}
         <motion.div
           variants={gridVariants}
           initial="hidden"

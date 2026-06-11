@@ -15,7 +15,6 @@ export default function Hero() {
   const circleLeftY = useTransform(scrollY, [0, 800], [0, -100]);
   const circleRightY = useTransform(scrollY, [0, 800], [0, -40]);
 
-  // Global mouse cursor halo tracking
   const spotlightX = useMotionValue(0);
   const spotlightY = useMotionValue(0);
 
@@ -28,7 +27,6 @@ export default function Hero() {
     spotlightY.set(e.clientY - rect.top);
   };
 
-  // Flat 2D Illustration Parallax tracking
   const tiltX = useMotionValue(0);
   const tiltY = useMotionValue(0);
 
@@ -113,13 +111,11 @@ export default function Hero() {
       onMouseMove={handleGlobalMouseMove}
       className="relative min-h-screen flex items-center justify-center pt-24 sm:pt-32 pb-16 sm:pb-20 bg-grid overflow-hidden bg-[#0B0B0C]"
     >
-      {/* Subtle scrolling background spotlight */}
       <motion.div
         style={{ y: baseSpotlightY }}
         className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-[800px] h-[400px] glow-spotlight pointer-events-none z-0"
       />
 
-      {/* Cursor halo following light */}
       <motion.div
         style={{
           x: useTransform(springSpotlightX, (val) => val - 300),
@@ -131,14 +127,12 @@ export default function Hero() {
       <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-8 w-full">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
           
-          {/* Left Side: Copy */}
           <motion.div
             variants={containerVariants}
             initial="hidden"
             animate="visible"
             className="lg:col-span-7 flex flex-col items-start text-left space-y-8"
           >
-            {/* Tag */}
             <motion.div
               variants={itemVariants}
               className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-[#ff6a00]/[0.15] bg-[#16161a] text-[10px] tracking-widest text-[#ff6a00] uppercase font-mono shadow-sm"
@@ -147,7 +141,6 @@ export default function Hero() {
               Digital Solutions Agency
             </motion.div>
 
-            {/* Heading with spring letter bounce */}
             <motion.h1
               variants={titleContainer}
               className="font-serif text-4xl sm:text-6xl font-bold tracking-tight text-white leading-[1.15]"
@@ -178,7 +171,6 @@ export default function Hero() {
               </span>
             </motion.h1>
 
-            {/* Subheading */}
             <motion.h2
               variants={itemVariants}
               className="text-xl sm:text-2xl font-semibold text-[#ff6a00] tracking-tight"
@@ -186,7 +178,6 @@ export default function Hero() {
               Build, Grow, and Strengthen Your Online Presence
             </motion.h2>
 
-            {/* Description */}
             <motion.p
               variants={itemVariants}
               className="text-sm text-slate-400 leading-relaxed font-light max-w-xl"
@@ -194,7 +185,6 @@ export default function Hero() {
               Veila Technologies is a technology-driven company focused on helping businesses grow through innovative digital solutions. We specialize in web development, software development, digital marketing, SEO, and social media management to provide reliable, creative, and result-oriented services that create real value.
             </motion.p>
 
-            {/* Contact details layout */}
             <motion.div
               variants={itemVariants}
               className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full pt-4 border-t border-white/[0.06]"
@@ -239,7 +229,6 @@ export default function Hero() {
               </motion.div>
             </motion.div>
 
-            {/* Action Buttons */}
             <motion.div
               variants={itemVariants}
               className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto pt-4"
@@ -269,7 +258,6 @@ export default function Hero() {
             </motion.div>
           </motion.div>
 
-          {/* Right Side: Circular Graphic stacking with 3D Mouse Parallax */}
           <div className="lg:col-span-5 flex items-center justify-center relative w-full overflow-hidden py-4 z-10">
             <motion.div 
               onMouseMove={handleIllustrationMouseMove}
@@ -277,7 +265,6 @@ export default function Hero() {
               className="relative w-[280px] h-[280px] min-[375px]:w-[320px] min-[375px]:h-[320px] sm:w-[400px] sm:h-[400px] flex items-center justify-center"
             >
               
-              {/* Backing solid orange circle 1 (top-left offset) - Slowly floats + flat parallax */}
               <motion.div
                 style={{ x: mouseCircleLeftX, y: circleLeftCombinedY }}
                 className="absolute top-0 left-2 w-[90px] h-[90px] min-[375px]:w-[110px] min-[375px]:h-[110px] min-[375px]:left-4 sm:w-[140px] sm:h-[140px] sm:left-6 z-0"
@@ -289,7 +276,6 @@ export default function Hero() {
                 />
               </motion.div>
 
-              {/* Backing solid orange circle 2 (bottom-right offset) - Slowly floats opposite + flat parallax */}
               <motion.div
                 style={{ x: mouseCircleRightX, y: circleRightCombinedY }}
                 className="absolute bottom-2 right-2 w-[60px] h-[60px] min-[375px]:w-[80px] min-[375px]:h-[80px] sm:w-[100px] sm:h-[100px] z-0"
@@ -301,7 +287,6 @@ export default function Hero() {
                 />
               </motion.div>
 
-              {/* Main Graphic Circle containing the generated artwork - slow micro-drift + flat parallax */}
               <motion.div
                 style={{ x: mouseIllustrationX, y: illustrationCombinedY }}
                 className="relative w-[230px] h-[230px] min-[375px]:w-[270px] min-[375px]:h-[270px] sm:w-[340px] sm:h-[340px] rounded-full border-[6px] sm:border-[8px] border-[#16161a] shadow-2xl overflow-hidden bg-[#16161a] z-10"
@@ -317,7 +302,6 @@ export default function Hero() {
                     className="w-full h-full object-cover"
                   />
                   
-                  {/* Visual quote/message overlay at the bottom - floating in front of image */}
                   <motion.div
                     whileHover={{ y: -4, scale: 1.02 }}
                     transition={{ duration: 0.3 }}

@@ -36,15 +36,12 @@ export default function Footer() {
 
   return (
     <footer className="relative bg-bg-obsidian border-t border-white/[0.03] pt-16 sm:pt-20 pb-10 overflow-hidden">
-      {/* Decorative subtle ambient line */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-px bg-gradient-to-r from-transparent via-[#ff6a00]/[0.1] to-transparent"></div>
 
       <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-8">
         
-        {/* Top Grid */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8 sm:gap-12 pb-16 border-b border-white/[0.04]">
           
-          {/* Logo / Brand Info */}
           <div className="col-span-1 md:col-span-2 space-y-6">
             <Link href="/" className="flex items-center gap-3 group">
               <img
@@ -73,7 +70,6 @@ export default function Footer() {
               <p>Phone: <a href="tel:+918072196400" className="hover:text-[#ff6a00] transition-colors font-semibold">+91 8072196400</a></p>
               <p>Location: Virudhunagar, Tamilnadu</p>
             </div>
-            {/* Social Icons */}
             <div className="flex items-center gap-4">
               <a
                 href="https://www.instagram.com/veilatechnologies"
@@ -103,7 +99,6 @@ export default function Footer() {
             </div>
           </div>
 
-          {/* Links Columns */}
           {sections.map((section, idx) => (
             <div key={idx} className="col-span-1 space-y-4">
               <h5 className="font-sans font-bold text-xs text-white tracking-wide uppercase">
@@ -126,7 +121,6 @@ export default function Footer() {
 
         </div>
 
-        {/* Bottom Section */}
         <div className="flex flex-col sm:flex-row items-center justify-between pt-8 gap-6">
           <div className="text-xs text-slate-500 font-light">
             © {currentYear === 2026 ? "2026" : "2026-" + currentYear} Veila Technologies. All rights reserved. Creative digital solutions that grow your online presence.

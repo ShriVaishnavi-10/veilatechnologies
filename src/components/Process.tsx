@@ -15,7 +15,6 @@ interface ProcessStep {
 export default function Process() {
   const sectionRef = useRef<HTMLDivElement>(null);
   
-  // Track scroll position of the section to draw the timeline path
   const { scrollYProgress } = useScroll({
     target: sectionRef,
     offset: ["start 80%", "start 35%"]
@@ -98,7 +97,6 @@ export default function Process() {
     >
       <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-8">
         
-        {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 15 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -117,9 +115,7 @@ export default function Process() {
           </p>
         </motion.div>
 
-        {/* Steps Grid with Timeline connector */}
         <div className="relative">
-          {/* Timeline Connector Line - Animated on Scroll */}
           <motion.div
             style={{ scaleX, originX: 0 }}
             className="hidden lg:block absolute top-[42px] left-12 right-12 h-[1.5px] bg-gradient-to-r from-[#ff8a00] to-[#ff2b00] z-0 shadow-[0_0_8px_rgba(255,106,0,0.4)]"
@@ -140,7 +136,6 @@ export default function Process() {
                 className="flex flex-col justify-between p-6 rounded-xl border border-white/[0.04] bg-[#16161a]/60 backdrop-blur-sm transition-all duration-300 hover:bg-[#16161a]/95 cursor-pointer relative group"
               >
                 <div className="space-y-4">
-                  {/* Number and Icon Badge */}
                   <div className="flex items-center justify-between pb-3 border-b border-white/[0.04]">
                     <span className="text-xl font-serif font-semibold italic text-[#ff6a00]/60 group-hover:text-[#ff6a00] transition-colors duration-300">
                       {step.number}

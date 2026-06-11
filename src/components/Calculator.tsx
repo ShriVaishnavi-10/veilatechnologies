@@ -12,7 +12,6 @@ export default function Calculator() {
   const pathname = usePathname();
   const isHome = pathname === "/";
 
-  // Mouse spotlight tracking
   const sectionX = useMotionValue(0);
   const sectionY = useMotionValue(0);
   const springSectionX = useSpring(sectionX, { stiffness: 85, damping: 24 });
@@ -29,12 +28,10 @@ export default function Calculator() {
   const [isEcommerce, setIsEcommerce] = useState<boolean>(false);
   const [socialPosts, setSocialPosts] = useState<number>(12);
   
-  // Target values
   const [webTarget, setWebTarget] = useState<number>(0);
   const [marketingTarget, setMarketingTarget] = useState<number>(0);
   const [totalTarget, setTotalTarget] = useState<number>(0);
 
-  // Animated display values
   const [displayWeb, setDisplayWeb] = useState<number>(0);
   const [displayMarketing, setDisplayMarketing] = useState<number>(0);
   const [displayTotal, setDisplayTotal] = useState<number>(0);
@@ -52,7 +49,6 @@ export default function Calculator() {
     }, 0);
   }, [pages, seoMonths, isEcommerce, socialPosts]);
 
-  // Smooth counter animation hook simulation for Web Portion
   useEffect(() => {
     const start = displayWeb;
     const end = webTarget;
@@ -76,7 +72,6 @@ export default function Calculator() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [webTarget]);
 
-  // Smooth counter animation hook simulation for Marketing Portion
   useEffect(() => {
     const start = displayMarketing;
     const end = marketingTarget;
@@ -100,7 +95,6 @@ export default function Calculator() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [marketingTarget]);
 
-  // Smooth counter animation hook simulation for Total Target
   useEffect(() => {
     const start = displayTotal;
     const end = totalTarget;
@@ -161,7 +155,6 @@ export default function Calculator() {
       id="calculator" 
       className="relative py-16 sm:py-28 bg-[#111113] border-t border-white/[0.03] overflow-hidden"
     >
-      {/* Moving cursor spotlight halo background light */}
       <motion.div
         style={{
           x: useTransform(springSectionX, (val) => val - 350),
@@ -172,7 +165,6 @@ export default function Calculator() {
 
       <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-8">
         
-        {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 15 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -191,10 +183,8 @@ export default function Calculator() {
           </p>
         </motion.div>
 
-        {/* Calculator layout */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-stretch">
           
-          {/* Sliders Pane */}
           <motion.div
             variants={containerVariants}
             initial="hidden"
@@ -203,7 +193,6 @@ export default function Calculator() {
             className="lg:col-span-7 p-5 sm:p-8 rounded-xl border border-white/[0.04] bg-[#16161a] flex flex-col justify-between shadow-sm space-y-8"
           >
             <div className="space-y-8">
-              {/* Web pages Slider */}
               <motion.div variants={itemVariants} className="space-y-4">
                 <div className="flex justify-between items-center text-xs">
                   <span className="text-white font-semibold uppercase tracking-wider">
@@ -234,7 +223,6 @@ export default function Calculator() {
                 </div>
               </motion.div>
 
-              {/* SEO Months Slider */}
               <motion.div variants={itemVariants} className="space-y-4">
                 <div className="flex justify-between items-center text-xs">
                   <span className="text-white font-semibold uppercase tracking-wider">
@@ -265,7 +253,6 @@ export default function Calculator() {
                 </div>
               </motion.div>
 
-              {/* Social posts Slider */}
               <motion.div variants={itemVariants} className="space-y-4">
                 <div className="flex justify-between items-center text-xs">
                   <span className="text-white font-semibold uppercase tracking-wider">
@@ -296,7 +283,6 @@ export default function Calculator() {
                 </div>
               </motion.div>
 
-              {/* E-Commerce checkbox toggle */}
               <motion.div
                 variants={itemVariants}
                 whileHover={{ scale: 1.01, borderColor: "rgba(255,106,0,0.2)" }}
@@ -323,7 +309,6 @@ export default function Calculator() {
             </div>
           </motion.div>
 
-          {/* Results Pane */}
           <motion.div
             initial={{ opacity: 0, x: 25 }}
             whileInView={{ opacity: 1, x: 0 }}
@@ -337,7 +322,6 @@ export default function Calculator() {
                 <span className="text-[9px] font-mono tracking-wider text-orange-100 uppercase block mb-1">
                   ESTIMATED INVESTMENT
                 </span>
-                {/* Smooth rolling numbers */}
                 <motion.div
                   key={displayTotal}
                   initial={{ scale: 0.98, opacity: 0.9 }}
@@ -348,7 +332,6 @@ export default function Calculator() {
                 </motion.div>
               </div>
 
-              {/* Dynamic Segmented Budget Bar */}
               <div className="space-y-2">
                 <div className="h-2 w-full rounded-full bg-white/10 flex overflow-hidden relative">
                   <motion.div 
